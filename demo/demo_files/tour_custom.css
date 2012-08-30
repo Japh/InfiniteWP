@@ -1,0 +1,24 @@
+@charset "utf-8";
+/* CSS Document */
+
+ul#site_nav {
+	margin: -6px 0 0 -10px;
+	padding: 10px 0 10px 10px;
+	float: left;
+	position: absolute;
+	border-radius: 6px;
+	box-shadow: 0 0 0px rgba(0,0,0,0);
+	width: 392px;
+	height: 24px;
+	-webkit-transition: box-shadow 0.1s ease-in;
+}
+ul.btn_radio_slelect {
+border-radius: 20px;
+float: left;
+margin: 7px 10px 0 84px;
+padding: 0;
+position: absolute;
+}
+#manage_groups_tool_tip { position:absolute; background-color: #505050; border-radius: 3px; border-color: #303030; color: #F3F3F3; padding: 5px 9px; margin: -32px 0 0 -37px; width: 87px; z-index: 1;}
+#manage_groups_tool_tip #arrow_tip { width:0; height:0; border-top:5px solid #505050; border-left:5px solid transparent; border-right:5px solid transparent; position: absolute; margin: 5px 0 0 34px;}
+.joyride_number { font-weight:400; padding-right:5px;}

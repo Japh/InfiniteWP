@@ -1,0 +1,24 @@
+@charset "utf-8";
+/* CSS Document */
+
+
+.ui-widget-overlay, .clear_input  { -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=70)";}
+
+.queue_list .th .loading, .btn_action.disabled, .btn_reload.disabled, .btn_action a.disabled, .btn_next_step.disabled, .item_ind.hidden .item, .item_ind.hidden .actions .hideItem  { -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)"; }
+
+.form_cont.settings .tr .edit, .wp_repository_search_results .tr_theme .theme_column .thumb:hover .btn_preview {-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)"; }
+
+.form_cont.settings .tr .edit:hover, .wp_repository_search_results .tr_theme .theme_column .thumb:hover .icon_preview, .btn_loadingDiv, .clear_input:hover {-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)"; }
+
+.wp_repository_search_results .tr_theme .theme_column .thumb .icon_preview, .wp_repository_search_results .tr_theme .theme_column .thumb .btn_preview {-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)"; }
+
+#bottom_toolbar #bottom_sites_cont #bottom_left .bottom_bar .toggle_manage_groups.active a {-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)"; }
+
+.history .timestamp { width:164px; }
+
+.history .row_name { width: 562px;}
+
+.history .row_detailed .row_name {
+width: 484px !important;
+}
+ 

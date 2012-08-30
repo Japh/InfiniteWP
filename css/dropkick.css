@@ -1,0 +1,218 @@
+/**
+ * Default DropKick theme
+ *
+ * Feel free to edit the default theme
+ * or even add your own.
+ *
+ * See the readme for themeing help
+ *
+ */
+
+/***** Begin Theme, feel free to edit in here! ******/
+
+/* One container to bind them... */
+
+.dk_container {
+	background:url(../images/rep_sprite.gif) repeat-x 0 -273px;
+	font-size: 12px;
+	line-height: 14px;
+	/* margin-bottom: 18px; */
+  height:23px;
+}
+.dk_container.disabled {
+	background:#eeeff0;
+	font-size: 12px;
+	line-height: 14px;
+	/* margin-bottom: 18px; */
+  height:23px;
+}
+.dk_container.disabled a {
+	border:1px solid #d3d5d6;
+	color:#babec1;
+	text-shadow:0 1px 0 rgba(255, 255, 255, 0.5);
+	box-shadow:0 0 0 rgba(0, 0, 0, 0);
+	cursor:default;
+	background-position: 105% 8px;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+}
+.dk_container:focus {
+	outline: 0;
+}
+.dk_container a {
+	cursor: pointer;
+	text-decoration: none;
+}
+/* Opens the dropdown and holds the menu label */
+.dk_toggle {
+	/**
+   * Help: Arrow image not appearing
+   * Try updating this property to your correct dk_arrows.png path
+   */
+  background: url(../images/arrow_down.png) no-repeat 95% 8px;
+	border: 1px solid #b7bbbe;
+	color: #676c70;
+	padding: 4px 20px 4px 10px;
+	text-shadow: #fff 1px 1px 0;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 1px 1px 1px rgba(255, 255, 255, 0.5) inset;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+	white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.bottom_bar .dk_toggle {
+	background: url(../images/arrow_up.png) no-repeat 95% 8px;
+}
+.dk_toggle.pressed {
+	padding: 5px 20px 3px 10px;
+	box-shadow: 0 0px 0px rgba(0, 0, 0, 0), 0px 1px 1px rgba(0, 0, 0, 0.1) inset;
+	background-position:95% 9px;
+}
+.dk_container.disabled .dk_toggle.pressed { padding: 4px 20px 4px 10px; }
+.dk_toggle:hover {
+	border-color: #b6bbbc;
+}
+/* Applied when the dropdown is focused */
+  .dk_focus .dk_toggle {
+/* border-color: #40b5e2; */
+  }
+.dk_focus .dk_toggle {
+/*   box-shadow: 0 0 5px #40b5e2;
+    -moz-box-shadow: 0 0 5px #40b5e2;
+    -webkit-box-shadow: 0 0 5px #40b5e2; */
+  }
+/* Applied whenever the dropdown is open */
+.dk_open {
+	/*   box-shadow: 0 0 5px #40b5e2;
+  -moz-box-shadow: 0 0 5px #40b5e2;
+  -webkit-box-shadow: 0 0 5px #40b5e2;
+ */  /**
+   * Help: Dropdown menu is covered by something
+   * Try setting this value higher
+   */
+   box-shadow: rgba(0, 0, 0, .2) 0 0 3px;
+	-moz-box-shadow: rgba(0, 0, 0, .2) 0 0 3px;
+	-webkit-box-shadow: rgba(0, 0, 0, .2) 0 0 3px;
+	z-index: 10;
+}
+.dk_open .dk_toggle {
+/* background-color: #ececec;
+    border-color: #8c8c8c;
+    color: #ccc; */
+    /* box-shadow: 0 0 2px rgba(0,0,0,0.5); */
+  }
+/* The outer container of the options */
+.dk_options {
+	box-shadow: rgba(0, 0, 0, 0.05) -1px 0px 1px, rgba(0, 0, 0, 0.05) 0 0px 1px, rgba(0, 0, 0, 0.05) 1px 0px 1px;
+}
+.dk_options a {
+	background:url(../images/rep_sprite.gif) repeat-x 0 -324px;
+	border-bottom: 1px solid #d8dcdf;
+	padding: 7px 10px 6px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: #676C70;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+}
+.dk_options li:last-child a {
+	border-bottom: 0 none;
+}
+.dk_option_current a {
+	background:url(../images/rep_sprite.gif) repeat-x 0 -351px;
+	color: #676c70;
+	text-decoration: none;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+	font-weight:700;
+}
+.dk_options a:hover {
+	background: url(../images/rep_sprite.gif) repeat-x 0 -296px;
+	color: #454c51;
+	text-decoration: none;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.dk_option_current a:hover { background-position:0 -351px; color: #676c70;}
+
+/* Inner container for options, this is what makes the scrollbar possible. */
+.dk_options_inner {
+	border: 1px solid #bfc3c6;
+	border-bottom-width: 1px;
+	border-bottom-color: #bfc3c6;
+	color: #676c70;
+	max-height: 250px;
+	text-shadow: #fff 0 1px 0;
+}
+/* Set a max-height on the options inner */
+.dk_options_inner, .dk_touch .dk_options {
+	max-height: 240px;
+}
+/******  End Theme ******/
+
+/***** Critical to the continued enjoyment of working dropdowns ******/
+
+.dk_container {
+	display: none;
+	float: left;
+	position: relative;
+}
+.dk_container a {
+	outline: 0;
+}
+.dk_toggle {
+	display: -moz-inline-stack;
+	display: inline-block;
+ *display: inline;
+	position: relative;
+	zoom: 1;
+}
+.dk_open {
+	position: relative;
+}
+.dk_open .dk_options {
+	display: block;
+}
+.dk_open .dk_label {
+	color: inherit;
+}
+.dk_options {
+	display: none;
+	margin-top: -1px;
+	position: absolute;
+	right: 0;
+	width: 100%;
+}
+.dk_options a,  .dk_options a:link,  .dk_options a:visited {
+	display: block;
+}
+.dk_options_inner {
+	overflow-y: auto;
+	position: relative;
+}
+.dk_touch .dk_options {
+	overflow: hidden;
+}
+.dk_touch .dk_options_inner {
+	max-height: none;
+	overflow: visible;
+}
+.dk_fouc select {
+	position: relative;
+	top: -99999em;
+	visibility: hidden;
+}
+
+/***** End Critical to the continued enjoyment of working dropdowns ******/
