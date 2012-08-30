@@ -16,6 +16,7 @@ class manageClientsFetch {
 		$requestAction = 'get_stats';
 		$requestParams =  array(
 						   'refresh' => 'transient',
+						   'force_refresh' => ($params['forceRefresh'] == 1) ? '1' : '0',
 						   'item_filter' => array
 							   (
 								   'get_stats' => array
@@ -138,7 +139,7 @@ class manageClientsFetch {
 		$historyAdditionalData = array();
 		$historyAdditionalData[] = array('detailedAction' => 'get', 'uniqueName' => 'getStats');
 		
-		$events=1;
+			$events=1;
 			$PRP = array();
 			$PRP['requestAction'] 	= $requestAction;
 			$PRP['requestParams'] 	= $requestParams;

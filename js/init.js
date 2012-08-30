@@ -4,7 +4,7 @@
  * www.revmakx.com											*
  *															*
  ************************************************************/
- 
+
  $(function () {
 	  $.fn.qtip.zindex = 900;
 	if ( $.browser.msie ) {
@@ -14,6 +14,8 @@
 			return false;
 		}
 	}
+	// Resize and remove elements when the canvas size is small
+	
 	loadFixedNotifications();
 
 	  if(totalSites>0)
@@ -82,7 +84,9 @@ historyRefresh();
 	if(!$(this).hasClass('disabled'))	
    $(this).removeClass('pressed');
     });*/
-
+$(window).resize(function() {
+	dynamicResize();
+});
 	$(document).bind('click', function(event) {
 	
  //Hide the menus if visible
@@ -115,7 +119,7 @@ $(".none").live('click',function() {
 selectorBind(this,'none');
 });
 $(".selectOption").live('click',function(e) {
-	if(!$(this).hasClass('updating') && !$(this).hasClass('hidden') && $(e.target).attr('href')=='') 
+	if(!$(this).hasClass('updating') && !$(this).hasClass('hidden') && ($(e.target).attr('href')=='' || $(e.target).attr('href')==undefined) ) 
 generalSelect(this,'',1);
 });
 $(".row_summary").live('click',function() {
@@ -256,9 +260,9 @@ cancelEvent(e);
 	else
 	makeSelection(this,1);
 	if(currentPage=="items")
-	showItemOptions(this);
+	showItemOptions();
 	else if (currentPage=="backups")
-	showBackupOptions(this);
+	showBackupOptions();
 });
 $(".ind_groups","#bottom_sites_cont").live('click',function() {
 	if(!$(this).hasClass('error'))
@@ -271,9 +275,9 @@ $(".siteSelectorSelect").live('click',function() {
 selection($(this).html().toLowerCase(),'website_cont');
 
 if(currentPage=="items")
-	showItemOptions(this);
+	showItemOptions();
 	else if (currentPage=="backups")
-	showBackupOptions(this);
+	showBackupOptions();
 });
 
 
@@ -323,10 +327,15 @@ $(".btn_create_group").live('click',function() {
 createGroup();
 });
 $(".showFooterSelector").live('click',function() {
-	$("#bottomToolBarSelector .nano").nanoScroller({stop: true});
-	$("#bottomToolBarSelector .bg_yellow").removeClass('bg_yellow');
-showOrHide(this,'pressed','bottom_sites_cont','1');
-$("#bottomToolBarSelector .nano").nanoScroller();
+	
+if($("#bottom_sites_cont").is(":visible"))
+{
+	$("#dynamic_resize").css("margin-left","0");
+	$(this).removeClass('pressed');
+	$("#bottom_sites_cont").hide();
+}
+else
+dynamicResize(1);
 return false;
 });
 $("#spreadLove").live('click',function() {
@@ -503,9 +512,9 @@ tempArray={};
  $(".website_cont").live('click',function() {
 	makeSelection(this);
 	if(currentPage=="items")
-	showItemOptions(this);
+	showItemOptions();
 	else if(currentPage=="backups")
-	showBackupOptions(this);
+	showBackupOptions();
 });
 
  $(".installItem").live('click',function() {
@@ -609,6 +618,9 @@ $(".generalSelect").live('click',function() {
    
 
    $(".addSiteButton").live('click',function() {
+	   var editSite='';
+	   if($(this).hasClass('editSite'))
+	   editSite=1;
 	$("#addSiteErrorMsg").remove();
 	 var  tempArray={};
 	    tempArray['args']={};
@@ -624,20 +636,51 @@ $(".generalSelect").live('click',function() {
 	   }
 	
 	   var groupIDs=groupSelected();
-
+ 		if(editSite!=1)
+		{
 	   tempArray['action']='addSite';
-	  tempArray['args']['params']['URL']=addsiteWebsite;
-	    tempArray['args']['params']['username']=addsiteUsername;
-	    tempArray['args']['params']['groupsPlainText']=addsiteGroupText;
-	    tempArray['args']['params']['groupIDs']=groupIDs;
-		tempArray['args']['params']['activationKey']=addsiteActivationKey;
+	   tempArray['args']['params']['URL']=addsiteWebsite;
+	   tempArray['args']['params']['activationKey']=addsiteActivationKey;
+	   tempArray['args']['params']['username']=addsiteUsername;
+	   tempArray['args']['params']['groupsPlainText']=addsiteGroupText;
+	   tempArray['args']['params']['groupIDs']=groupIDs;
+	   if($("#addSiteAuthUsername").val()!="username")
+	   {
+	   tempArray['args']['params']['httpAuth']={};
+	   tempArray['args']['params']['httpAuth']['username']=$("#addSiteAuthUsername").val()
+	   tempArray['args']['params']['httpAuth']['password']=$("#addSiteAuthUserPassword").val()
+	   }
+	}
+	   
+
+	    
+		
 		tempArray['requiredData']={};
+		
+		if(editSite==1)
+		{
+		tempArray['requiredData']['updateSite']={};
+		tempArray['requiredData']['updateSite']['siteID']=$(this).attr('sid');
+		tempArray['requiredData']['updateSite']['adminURL']=$("#adminURL",".add_site.form_cont").val();
+		tempArray['requiredData']['updateSite']['groupsPlainText']=addsiteGroupText;
+		tempArray['requiredData']['updateSite']['groupIDs']=groupIDs;
+		tempArray['requiredData']['updateSite']['adminUsername']=addsiteUsername;
+		if($("#addSiteAuthUsername").val()!="username")
+	   {
+	   tempArray['requiredData']['updateSite']['httpAuth']={};
+	   tempArray['requiredData']['updateSite']['httpAuth']['username']=$("#addSiteAuthUsername").val()
+	   tempArray['requiredData']['updateSite']['httpAuth']['password']=$("#addSiteAuthUserPassword").val()
+	   }
+		
+		}
+		tempArray['requiredData']['getSitesUpdates']=1;
 		tempArray['requiredData']['getGroupsSites']=1;
 		tempArray['requiredData']['getSites']=1;
-		tempArray['requiredData']['getSitesUpdates']=1;
 		$(this).addClass('disabled');
 		$(this).prepend('<div class="btn_loadingDiv left"></div>');
-	
+	if(editSite==1)
+	doCall(ajaxCallPath,tempArray,"processEditSite","json","none");
+	else
 		doCall(ajaxCallPath,tempArray,"processAddSite","json","none");
 	   
    });
@@ -658,9 +701,16 @@ $(".installFromComputer").live('click',function() {
 	var arrayCounter=0;
 	var URL={};
 	var testURL='';
+	var funcURL=systemURL;
 	$(this).addClass('disabled');
+	if(settingsData.data.getSettingsAll.settings.general.httpAuth!=undefined)
+	{
+		if(settingsData.data.getSettingsAll.settings.general.httpAuth.username!='')
+		funcURL=funcURL.replace("://","://"+settingsData.data.getSettingsAll.settings.general.httpAuth.username+":"+settingsData.data.getSettingsAll.settings.general.httpAuth.password+"@");
+	}
 	$(".installFileNames").each(function () {
-	testURL=systemURL+"uploads/"+$(this).html();
+	
+	testURL=funcURL+"uploads/"+$(this).html();
 	URL[arrayCounter]=testURL; arrayCounter++;
 	});
 	installItems('',URL,2);
@@ -828,6 +878,9 @@ $(".bottomSites").live('mouseenter',function() {
 	if($('#bottomToolbarOptions').length != 0)
 	$('#bottomToolbarOptions').remove();
 	loadBottomToolbarOptions($(this).attr('sid'));
+	if(bottomFullBar==1)
+	var topval=position.top-($(window).height()-43);
+	else
 	var topval=position.top-392;
 	
 	$("#bottomToolbarOptions").css("top",topval);
@@ -955,6 +1008,12 @@ $("#reloadStats").live('click',function() {
 	tempArray['action']='getStats';
 	tempArray['requiredData']={};
 	tempArray['requiredData']['getSitesUpdates']=1;
+	if($("#clearPluginCache").hasClass('active'))
+	{
+		tempArray['args']={};
+		tempArray['args']['params']={};
+		tempArray['args']['params']['forceRefresh']=1;
+	}
 	tempArray['requiredData']['getClientUpdateAvailableSiteIDs']=1;
 	
 	doCall(ajaxCallPath,tempArray,"refreshStats","json","none");
@@ -1109,12 +1168,29 @@ $("#saveSettingsBtn").live('click',function(){
 			var anonymous=1;
 			else
 			var anonymous=0;
+			if($("#enableFsockFget").hasClass('active'))
+			var enableFsockFget=1;
+			else
+			var enableFsockFget=0;
+			if($("#enableReloadDataPageLoad").hasClass('active'))
+			var enableReloadDataPageLoad=1;
+			else
+			var enableReloadDataPageLoad=0;
 			
+			if($("#authUsername").val()!='username')
+			{
+			tempArray['requiredData']['updateSettings']['general']['httpAuth']={};
+			tempArray['requiredData']['updateSettings']['general']['httpAuth']['username']=$("#authUsername").val();
+			tempArray['requiredData']['updateSettings']['general']['httpAuth']['password']=$("#authPassword").val();
+			}
+			tempArray['requiredData']['updateSettings']['general']['MAX_SIMULTANEOUS_REQUEST_PER_IP']=$("#amount01").val();
 			tempArray['requiredData']['updateSettings']['general']['MAX_SIMULTANEOUS_REQUEST_PER_IP']=$("#amount01").val();
 			tempArray['requiredData']['updateSettings']['general']['MAX_SIMULTANEOUS_REQUEST']=$("#amount02").val();
 			tempArray['requiredData']['updateSettings']['general']['TIME_DELAY_BETWEEN_REQUEST_PER_IP']=$("#amount03").val();
 			tempArray['requiredData']['updateSettings']['allowedLoginIPs'] = IPArray;
 			tempArray['requiredData']['updateSettings']['general']['sendAnonymous'] = anonymous;
+			tempArray['requiredData']['updateSettings']['general']['enableFsockFget'] = enableFsockFget;
+			tempArray['requiredData']['updateSettings']['general']['enableReloadDataPageLoad'] = enableReloadDataPageLoad;
 			tempArray['requiredData']['getSettingsAll']=1;
 			doCall(ajaxCallPath,tempArray,"processAppSettings","json","none");
 			
@@ -1139,7 +1215,7 @@ $(".removeIP").live('click',function() {
 	$(this).closest('.ip_cont').remove();
 	triggerSettingsButton();
 });
-$("#sendAnonymous").live('click',function() { 
+$("#sendAnonymous, #enableFsockFget, #enableReloadDataPageLoad, #clearPluginCache").live('click',function() { 
 makeSelection(this);
 });
 $("#change_pass_btn").live('click',function () {
@@ -1242,29 +1318,47 @@ tempArray['requiredData']['getSitesUpdates']=1;
 	$(this).addClass('disabled');
 		$(this).prepend('<div class="btn_loadingDiv left"></div>');
 		$("#dontRemoveSite","#modalDiv").hide();
-doHistoryCall(ajaxCallPath,tempArray,'processRemoveSite');
+doCall(ajaxCallPath,tempArray,'processRemoveSite');
 return false;
 
 	
 	
 });
-$("#assignToggleAction").live('click',function(e) {
-	var assignToggleCont=$("#assignToggle").text();
-	if(assignToggleCont=='+')
+$(".addSiteToggleAction").live('click',function(e) {
+	
+	$(".addSiteToggleDiv").hide();
+	if(!$(this).hasClass('active'))
 	{
-		$("#modalDiv .nano").nanoScroller({stop: true});
+	if($(this).hasClass("assignToggleAction"))
+	{
+	$("#modalDiv .nano").nanoScroller({stop: true});
 	$(".assignGroupItem").show();
 		
 	$("#modalDiv .group_selector").css('height',$("#modalDiv .group_selector").height()).addClass('nano');
 	$("#modalDiv .nano").nanoScroller();
-	$("#assignToggle").text('-');
+	}
+	else if($(this).hasClass("folderToggleAction"))
+	{
+		$(".folderProtectionItem").show();
+	}
+	$(".addSiteToggleAction").removeClass('active');
+	$(this).addClass('active');
 	}
 	else
 	{
+	if($(this).hasClass("assignToggleAction"))
+	{
 	$(".assignGroupItem").hide();
-	$("#assignToggle").text('+');
+	}
+	else if($(this).hasClass("folderToggleAction"))
+	{
+	$(".folderProtectionItem").hide();
+	
+	}
+	$(this).removeClass('active');
 	}
 });
+
 // Update count
 
 $(".panelInstall").live('click',function(e) {
@@ -1327,6 +1421,8 @@ $("#enterDetailsTab").live('click',function() {
 	
 	if(!$(this).hasClass('clickNone'))
 	{
+		$(".th_btm_info").remove();
+	$("#enterBackupDetails").before('<div class="th_btm_info rep_sprite_backup">A maximum of only 5 backups will be stored. Successive backups will over-write existing backups.</div>');
 		$(this).addClass('current').removeClass('completed');
 	$("#selectWebsitesTab").removeClass('current').addClass('completed');
 	$("#backupOptions,#backupNow").show();
@@ -1334,6 +1430,8 @@ $("#enterDetailsTab").live('click',function() {
 	}
 });
 $("#selectWebsitesTab").live('click',function() {
+	$(".th_btm_info").remove();
+	showBackupOptions();
 	$(this).addClass('current').removeClass('completed');
 	$("#enterDetailsTab").removeClass('current completed').addClass('clickNone');
 	$(".siteSelectorContainer,#enterBackupDetails").show();
@@ -1400,8 +1498,10 @@ $(".groupClear").live('focus',function(e) {
 	
 });
  loadSettingsPage(settingsData);
-   if(totalSites>0)
+
+   if(totalSites>0 && (settingsData.data.getSettingsAll.settings.general.enableReloadDataPageLoad==undefined || settingsData.data.getSettingsAll.settings.general.enableReloadDataPageLoad==1) )
    $("#reloadStats").click();
+  
    $("#currentVersionNumber").text('v'+appVersion);
    if(updateAvailable==false)
    loadPanelUpdateDefault();
@@ -1522,6 +1622,30 @@ loadFeatureTour();
 	$(".n_close").live('click',function() { 
 $(this).closest('.notification').remove();
 });
+$(".editSiteBtn").live('click',function() { 
+loadAddSite();
+$(".dialog_cont .title").text("EDIT SITE DETAILS");
+$(".dialog_cont .activationKeyDiv").hide();
+$(".dialog_cont .adminURLDiv").show();
+
+$(".dialog_cont .addSiteButton").text('Save Changes').addClass('editSite').attr('sid',$(this).attr('sid'));
+$(".dialog_cont #websiteURL").attr("disabled","disabled").val(site[$(this).attr('sid')].URL).addClass("disabled");
+$(".dialog_cont #adminURL").val(site[$(this).attr('sid')].adminURL);
+$(".dialog_cont #username").val(site[$(this).attr('sid')].adminUsername).focus();
+$("#clientPluginDescription").hide();
+if(site[$(this).attr('sid')].httpAuth!=undefined && site[$(this).attr('sid')].httpAuth.username!=undefined)
+$(".dialog_cont #addSiteAuthUsername").val(site[$(this).attr('sid')].httpAuth.username);
+if(site[$(this).attr('sid')].httpAuth!=undefined && site[$(this).attr('sid')].httpAuth.password!=undefined)
+$(".dialog_cont #addSiteAuthUserPassword").val(site[$(this).attr('sid')].httpAuth.password);
+if(getPropertyCount(site[$(this).attr('sid')].groupIDs)>0)
+{
+$.each(site[$(this).attr('sid')].groupIDs, function(i, object) {
+	$(".addSiteGroups .g"+object).addClass('active');
+});
+}
+
+});
+	dynamicResize();
 	
   /* -------------	   -------------	   -------------	   -------------	   -------------	   -------------	   -------------	   -------------	   -------------	   -------------	   -------------	  */
   });

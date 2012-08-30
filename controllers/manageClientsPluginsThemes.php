@@ -59,6 +59,7 @@ class manageClientsPluginsThemes {
 		$errorDetail['folder_exists'] 	= 'Folder exists: ';
 		$errorDetail['mkdir_failed'] 	= 'Create directory failed: ';
 		$errorDetail['incompatible_archive'] = 'Incompatible archive: ';
+		$errorDetail['copy_failed'] = 'Copy failed: ';
 		
 		responseDirectErrorHandler($historyID, $responseData);
 		

@@ -8,7 +8,7 @@
  
 class manageClientsSites{
 	
-	  public static function addSiteProcessor($dummy, $params){ // Add a site 	  
+	  public static function addSiteProcessor($dummy, $params){ // Add a site   
 	  
 		$requestAction = "add_site";
 		$action = "add";
@@ -27,8 +27,14 @@ class manageClientsSites{
 		
 		$historyAdditionalData = array();
 		$historyAdditionalData[] = array('uniqueName' => $params['URL'], 'detailedAction' => $action);
+			
 		
 		$historyData = array('siteID' => '0', 'actionID' => $actionID, 'userID' => $_SESSION['userID'], 'type' => $type, 'action' => $action, 'events' => $events, 'URL' => $params['URL'], 'timeout' => $timeout);	
+		if(!empty($params['httpAuth']['username'])){
+			$callOpt = array();
+			$callOpt['httpAuth'] = $params['httpAuth'];
+			$historyData['callOpt'] = @serialize($callOpt);
+		}
 		$historyID = addHistory($historyData, $historyAdditionalData);
 				
 		if (checkOpenSSL()) {//use when remote WP has openssl installed or not installed
@@ -64,6 +70,7 @@ class manageClientsSites{
 		$_SESSION['storage']['newSite']['addSiteAdminUsername'] = $params['username'];
 		$_SESSION['storage']['newSite']['groupsPlainText'] =  $params['groupsPlainText'];
 		$_SESSION['storage']['newSite']['groupIDs'] =  $params['groupIDs'];
+		$_SESSION['storage']['newSite']['httpAuth'] = $params['httpAuth'];
 		
 	
 		$requestParams = array('site_url' => $params['URL'], 'action' => $requestAction, 'public_key' => $publicKey, 'id' => $historyID, 'signature' => $signData, 'username' => $params['username'], 'activation_key' => $params['activationKey']);
@@ -79,7 +86,7 @@ class manageClientsSites{
 		
 		DB::insert("?:history_raw_details", array('historyID' => $historyID, 'request' => base64_encode(serialize($requestData)), 'panelRequest' => serialize($_REQUEST) ) );
 		
-		return executeRequest($historyID, $type, $action, $params['URL'], $requestData, $timeout=10);
+		return executeRequest($historyID, $type, $action, $params['URL'], $requestData, $timeout, true, $callOpt);
 	  }
 	  
 	  public static function addSiteResponseProcessor($historyID,$responseData){
@@ -120,12 +127,18 @@ class manageClientsSites{
 								 "parent" =>   ($responseData['success']['site_home'] == $responseData['success']['network_parent']) ? 1 : 0
 							 	); // save data
 								
+			  if(!empty($_SESSION['storage']['newSite']['httpAuth']['username'])){
+					$siteData['httpAuth']['username'] = $_SESSION['storage']['newSite']['httpAuth']['username'];
+					$siteData['httpAuth']['password'] = $_SESSION['storage']['newSite']['httpAuth']['password'];
+					$siteData['httpAuth'] = @serialize($siteData['httpAuth']);
+			  }
+								
 			  $siteID = DB::insert('?:sites', $siteData); 
 			  DB::replace("?:user_access", array('userID' => $_SESSION['userID'], 'siteID' => $siteID));			  
 			  
 			  $groupsPlainText = $_SESSION['storage']['newSite']['groupsPlainText'];
-		  	  $groupIDs = $_SESSION['storage']['newSite']['groupIDs'];			  
-			  panelRequestManager::addSiteSetGroups($siteID, $groupsPlainText, $groupIDs);			  
+		  	  $groupIDs = $_SESSION['storage']['newSite']['groupIDs'];
+			  panelRequestManager::addSiteSetGroups($siteID, $groupsPlainText, $groupIDs);		  
 			  unset($_SESSION['storage']['newSite']);
 			  
 			  //---------------------------post process------------------------>
@@ -210,6 +223,12 @@ class manageClientsSites{
 		
 		$URL = $siteData['adminURL'].$where."auto_login=1&iwp_goto=".$where."&signature=".urlencode(base64_encode($signature))."&message_id=".$historyID."&username=".$siteData['adminUsername'];
 		
+		if(!empty($siteData['httpAuth'])){
+			$siteData['httpAuth'] = @unserialize($siteData['httpAuth']);	
+			if(!empty($siteData['httpAuth']['username'])){
+				$URL = str_replace('://', '://'.$siteData['httpAuth']['username'].':'.$siteData['httpAuth']['password'].'@', $URL);
+			}
+		}		
 		
 		$updateHistoryData = array('param3' => $URL);	
 		updateHistory($updateHistoryData, $historyID);

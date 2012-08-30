@@ -297,6 +297,19 @@ ul#header_nav li.settings #settings_cont .app_settings .tr .slider_cont .slider_
 ul#header_nav li.settings #settings_cont .app_settings .tr .slider_cont .slider_stroke #slider-range03.ui-widget-content {
 	background:url(../images/settings_slider03.gif) repeat-x;
 }
+ul#header_nav li.settings #settings_cont .tr .http_auth { margin:14px auto 2px; width: 480px;}
+ul#header_nav li.settings #settings_cont .tr .http_auth input { border: 1px solid #B7BEC0;
+border-radius: 3px;
+width: 227px;
+height: 17px;
+padding: 3px;
+font-family: 'Droid Sans', sans-serif;
+font-size: 12px; -webkit-transition: background-color 0.1s ease-in;
+-moz-transition: background-color 0.1s ease-in;
+-o-transition: background-color 0.1s ease-in;
+-ms-transition: background-color 0.1s ease-in;
+transition: background-color 0.1s ease-in; color: #737987;}
+ul#header_nav li.settings #settings_cont .tr .http_auth input:focus { outline: 0; background: #FFFFEC;}
 ul#header_nav li.help {
 	position:relative;
 }
@@ -804,6 +817,7 @@ input.input_type_filter, .purchased_addons .th .login input {
 	margin-bottom: -1px;
 	max-height: 228px;
 	overflow-x: hidden;
+	min-height: 70px;
 }
 .create_backup .site_selector1 .bywebsites .website_items_cont {
 	width: 627px;
@@ -1016,10 +1030,11 @@ ul.btn_radio_slelect li a.active:hover, .hidden_updates a#viewHidden.active:hove
 .btn_reload.disabled {
 	opacity:0.5;
 }
+.btn_reload.disabled a:active { background-position: -5px -685px; padding: 5px 12px 6px 29px;}
 .btn_reload a.disabled {
 	box-shadow:0 0 0 rgba(0, 0, 0, 0), 0 0 0 rgba(0, 0, 0, 0) inset !important;
 }
-.btn_action.disabled a {
+.btn_action.disabled a, .btn_reload.disabled a, .btn_reload.disabled a:hover {
 	box-shadow:0 0 0 rgba(0, 0, 0, 0);
 }
 .btn_action.disabled a:hover {
@@ -1088,6 +1103,7 @@ ul.btn_radio_slelect li a.active:hover, .hidden_updates a#viewHidden.active:hove
 	float:right;
 	margin-top: 4px;
 	box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+	margin-right: 30px;
 }
 .btn_reload a {
 	background-position: -5px -685px;
@@ -1152,6 +1168,7 @@ ul.btn_radio_slelect li a.active:hover, .hidden_updates a#viewHidden.active:hove
 	text-shadow:0 1px 0 rgba(255, 255, 255, 0.3);
 	box-shadow:0 0px 0px rgba(0, 0, 0, 0) inset, 0 1px 0 rgba(255, 255, 255, 0.3);
 }
+.btn_reload.disabled:active { background-position: 0 -143px; box-shadow:0 0 0 rgba(0, 0, 0, 0);}
 .btn_reload:active a {
 	box-shadow:0 0 0 rgba(0, 0, 0, 0);
 	background-position: -5px -684px;
@@ -1946,7 +1963,7 @@ ind_row_cont:first-child .row_detailed {
 	font-family: 'Droid Sans', sans-serif;
 	color:#737987;
 	font-size:12px;
-}
+}.form_cont .tr .td input.disabled, input.txt.disabled { background-color:#f2f2f2; border-color:#d5d9da; cursor:default; color: #A4AEB6 !important;}
 .form_cont .tr .td textarea {
 	width: 96%;
 	border:1px solid #b7bec0;
@@ -1962,10 +1979,11 @@ ind_row_cont:first-child .row_detailed {
 .form_cont .group_selector {
 	width: 355px;
 	border: 1px solid #B7BEC0;
-	/* border-radius: 3px; */
-max-height: 122px;
+	border-radius: 3px;
+	max-height: 117px;
 	overflow: hidden;
 }
+.form_cont .group_selector .ind_group_set { height:26px;}
 .form_cont .group_selector .ind_group {
 	height: 25px;
 	border-bottom: 1px solid #B7BEC0;
@@ -1973,6 +1991,8 @@ max-height: 122px;
 	float: left;
 	width: 177px;/* margin-bottom:-1px; */
 }
+.form_cont .group_selector .ind_group_set:first-child {}
+.form_cont .group_selector .ind_group_set:last-child .ind_group {border-bottom: 0;}
  .form_cont .group_selector .ind_group:nth-child(2n+2) {
 border-right:0;
 }
@@ -2291,6 +2311,12 @@ ul.th_sub_nav li a.active {
 	background-position: right -443px;
 	padding: 10px 30px 10px 4px;
 }
+.dialog_cont .th .th_btm_info { background-position: 0 -816px;
+width: auto;
+padding: 11px 10px 9px 34px;
+height: 14px;
+color: #737987;
+float: left;}
 .dialog_cont.create_backup .th_sub ul {
 	margin-left:70px;
 }
@@ -2439,11 +2465,6 @@ background-color:#fdfdfd;
 	width:424px;
 	border-left:1px solid #d2d5d7;
 	margin-left:-1px;
-}
-.create_backup_sitewise .right {
-	width:424px;
-	border-left:0;
-	margin:auto;
 }
 .create_backup .right .backup_what {
 	padding:20px;
@@ -2813,7 +2834,7 @@ input.profile_name {
 	background:url(../images/bottom_toolbar_btn.png) no-repeat 0 0;
 	width:42px;
 	height:44px;
-	margin: -12px 0 0 6px;
+	margin: -12px 0 0 0px;
 	position: absolute;
 }
 #bottom_toolbar #btn:hover {
@@ -2825,7 +2846,7 @@ input.profile_name {
 #bottom_toolbar #bottom_sites_cont {  /* width: 521px; */
 	float:left;
 	height: 401px;
-	margin: -400px 0 0 10px;
+	margin: -400px 0 0 -1px;
 	border-bottom: 0;
 	position: absolute;
 }
@@ -3003,7 +3024,7 @@ input.profile_name {
 }
 #bottom_toolbar .ind_sites_nav {
 	position: absolute;
-	margin-left: 271px;
+	margin-left: 260px;
 	margin-top:-8px;
 	background:#fdfdfd;
 	box-shadow: 2px 0 3px -2px rgba(0, 0, 0, 0.2), 1px 0 1px rgba(0, 0, 0, 0.1) inset;
@@ -3012,33 +3033,37 @@ input.profile_name {
 	border: 1px solid #d8dcdf;
 	float:left;
 	width: 153px;
-	height: 131px;
+	height: 135px;
 }
 #bottom_toolbar .ind_sites_nav .left .nav_admin {
 	background:url(../images/icon_admin.png) no-repeat 0 0;
 	width: 153px;
-	height: 65px;
+	height: 67px;
 	border-bottom: 1px solid #d8dcdf;
 }
 #bottom_toolbar .ind_sites_nav .left .nav_backup {
 	background:url(../images/icon_backup_folder.png) no-repeat 0 0;
 	width: 153px;
-	height: 66px;
+	height: 68px;
 }
 #bottom_toolbar .ind_sites_nav .right {
 	border: 1px solid #d8dcdf;
 	border-left:0;
 	float:left;
 	width: 153px;
-	height: 131px;
+	height: 135px;
 }
 #bottom_toolbar .ind_sites_nav .right .nav_view_site {
 	background:url(../images/icon_sites.png) no-repeat 0 0;
 	width: 153px;
-	height: 65px;
+	height: 67px;
 	border-bottom: 1px solid #d8dcdf;
 }
 #bottom_toolbar .ind_sites_nav .right .nav_options {
+}
+#bottom_toolbar .ind_sites_nav .right .nav_options .edit_site {
+	background-position: 0 -512px;
+	height: 12px;
 }
 #bottom_toolbar .ind_sites_nav .right .nav_options .remove {
 	background-position: 0 -613px;
@@ -3049,7 +3074,7 @@ input.profile_name {
 }
 #bottom_toolbar .ind_sites_nav a.link {
 	border-bottom: 1px solid #d8dcdf;
-	padding: 10px;
+	padding: 10px 10px 11px;
 	margin-left: 35px;
 	float: left;
 	width: 98px;
@@ -3058,7 +3083,7 @@ input.profile_name {
 }
 #bottom_toolbar .ind_sites_nav a.link_long {
 	border-bottom: 1px solid #d8dcdf;
-	padding: 10px 10px 10px 42px;
+	padding: 10px 10px 11px 42px;
 	float: left;
 	width: 101px;
 	color: #555;
@@ -3321,6 +3346,72 @@ input.profile_name {
 	border-right:1px solid #e6e6e6;
 	float:left;
 }
+@-webkit-keyframes open-admin-here-site-glow {
+ 0% {
+box-shadow: 0 0 0px #f2583e;
+}
+ 50% {
+box-shadow: 0 0 15px #f2583e;
+border:1px solid #f2583e;
+}
+ 100% {
+box-shadow: 0 0 0px #f2583e;
+}
+}
+@-moz-keyframes open-admin-here-site-glow {
+ 0% {
+box-shadow: 0 0 3px #f2583e;
+}
+ 50% {
+box-shadow: 0 0 11px #f2583e;
+border:1px solid #f2583e;
+}
+ 100% {
+box-shadow: 0 0 3px #f2583e;
+}
+}
+@-ms-keyframes open-admin-here-site-glow {
+ 0% {
+box-shadow: 0 0 3px #f2583e;
+}
+ 50% {
+box-shadow: 0 0 11px #f2583e;
+border:1px solid #f2583e;
+}
+ 100% {
+box-shadow: 0 0 3px #f2583e;
+}
+}
+@-webkit-keyframes shake {
+	0%, 100% {-webkit-transform: translateX(0);}
+	10%, 30%, 50%, 70%, 90% {-webkit-transform: translateX(-10px);}
+	20%, 40%, 60%, 80% {-webkit-transform: translateX(10px);}
+}
+
+@-moz-keyframes shake {
+	0%, 100% {-moz-transform: translateX(0);}
+	10%, 30%, 50%, 70%, 90% {-moz-transform: translateX(-10px);}
+	20%, 40%, 60%, 80% {-moz-transform: translateX(10px);}
+}
+
+@-ms-keyframes shake {
+	0%, 100% {-ms-transform: translateX(0);}
+	10%, 30%, 50%, 70%, 90% {-ms-transform: translateX(-10px);}
+	20%, 40%, 60%, 80% {-ms-transform: translateX(10px);}
+}
+
+@-o-keyframes shake {
+	0%, 100% {-o-transform: translateX(0);}
+	10%, 30%, 50%, 70%, 90% {-o-transform: translateX(-10px);}
+	20%, 40%, 60%, 80% {-o-transform: translateX(10px);}
+}
+
+@keyframes shake {
+	0%, 100% {transform: translateX(0);}
+	10%, 30%, 50%, 70%, 90% {transform: translateX(-10px);}
+	20%, 40%, 60%, 80% {transform: translateX(10px);}
+}
+
 #bottom_toolbar #toolbar_sites_cont .site {
 	background-position:0 -791px;
 	float:left;
@@ -3328,6 +3419,12 @@ input.profile_name {
 	border-radius:3px;
 	margin:7px;
 }
+#bottom_toolbar #toolbar_sites_cont .site.animated{
+	-webkit-animation: shake 1s 1, open-admin-here-site-glow 2s 1;
+	-moz-animation:    shake 1s 1, open-admin-here-site-glow 2s 1;
+	-ms-animation:     shake 1s 1, open-admin-here-site-glow 2s 1;
+}
+#bottom_toolbar #toolbar_sites_cont .site {}
 #bottom_toolbar #toolbar_sites_cont .site > div {
 	float:left;
 	box-shadow: 0 2px 0px rgba(0, 0, 0, 0.05);
@@ -3943,15 +4040,24 @@ input.add_ip {
 	margin-bottom: -4px;
 	margin-right: 5px;
 }
-.dialog_cont.add_site #assignToggleAction span {
-	text-transform: none;
+.dialog_cont.add_site span.toggle_link span {
+	text-transform: uppercase;
 	font-weight: 400;
-	font-size: 12px;
+	font-size: 11px;
+	color: #737987;
+	text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
+	margin-right: 20px;
+	background-color: #fff;
+	padding: 2px 4px;
+	border-radius: 3px;
 }
-.dialog_cont.add_site #assignToggleAction span:hover {
-	text-decoration:underline;
+.dialog_cont.add_site span.toggle_link span:hover {
+	background-color: #CFD6D8;
 	cursor:pointer;
 }
+.folderProtectionItem input { width: 43% !important;
+margin-right: 6px;}
+.dialog_cont.add_site span.toggle_link span.active { background-color:#737987; color:#fff;}
 .dialog_cont.add_site .th_sub, .dialog_cont.send_report .th_sub {
 	border-top:1px solid #c6c9ca;
 	margin-top:10px;
@@ -4122,8 +4228,8 @@ input.add_ip {
 	left:-20px;
 }
 .btn_reload .btn_loadingDiv {
-	top:4px;
-	left:-25px;
+	top: 3px;
+left: 121px;
 }
 .siteSearch .hide {
 	margin-left:-99999px;
@@ -4179,6 +4285,8 @@ input.add_ip {
 .empty_data_set.websites {
 	padding:10px;
 	text-align: left;
+	position: absolute;
+	bottom: 10px;
 }
 .empty_data_set .line1 {
 	color:#505050;
@@ -4271,7 +4379,7 @@ text-decoration:none;
 #ui-tooltip-addWebsiteQtip-content.ui-tooltip-content, #ui-tooltip-viewHiddenQtip-content.ui-tooltip-content, #ui-tooltip-reloadStatsQtip-content.ui-tooltip-content, #ui-tooltip-adminPopupQtip-content, #ui-tooltip-manageGroupsQtip-content {
 	display:none;
 }
-#ui-tooltip-toggleGroupQtip.ui-tooltip, #ui-tooltip-adminPopupQtip.ui-tooltip, #ui-tooltip-manageGroupsQtip {
+#ui-tooltip-toggleGroupQtip.ui-tooltip, #ui-tooltip-adminPopupQtip.ui-tooltip, #ui-tooltip-manageGroupsQtip, #ui-tooltip-addWebsiteQtip {
 	z-index:1020 !important;
 }
 ul.checkbox_cont {

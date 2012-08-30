@@ -12,7 +12,8 @@ include('includes/app.php');
 
 
 if( $_GET['action'] == 'appUpdate' && !empty($_GET['newVersion']) ){
-	if($_GET['newVersion'] == $_SESSION['updateAvailable']['newVersion']){
+	$updateAvailable = checkUpdate(false, false);
+	if($_GET['newVersion'] == $updateAvailable['newVersion']){
 		echo str_pad(' ', 400);
 		?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

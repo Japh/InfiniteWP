@@ -36,7 +36,7 @@ function repoDoCall($URL, $data){
 	curl_setopt($ch, CURLOPT_POST, 1);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	//curl_setopt($ch, CURLOPT_HTTPHEADER,array('Content-Type: text/plain')); 
-	curl_setopt($ch, CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+	curl_setopt($ch, CURLOPT_USERAGENT,'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:10.0) Gecko Firefox/10.0');
 	curl_setopt($ch, CURLOPT_POST, true);
 	curl_setopt($ch, CURLOPT_POSTFIELDS,$data);
 	$return=curl_exec($ch);
@@ -49,17 +49,23 @@ function doCall($URL, $data, $timeout=DEFAULT_MAX_CLIENT_REQUEST_TIMEOUT, $optio
 {	
 	$SSLVerify = false;
 	$URL = trim($URL);
-	if(stripos($URL, 'https://') !== false){ $SSLVerify = true; }
+	//if(stripos($URL, 'https://') !== false){ $SSLVerify = true; }
 	
 	$ch = curl_init($URL);
 	curl_setopt($ch, CURLOPT_URL, $URL);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($ch, CURLOPT_MAXREDIRS, 2);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: text/plain')); 
-	curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+	curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded')); //before array('Content-Type: text/plain')
+	curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:10.0) Gecko Firefox/10.0');	
 	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, ($SSLVerify === true) ? 2 : false );
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $SSLVerify);
 	curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+	
+	if(!empty($options['httpAuth'])){
+		curl_setopt($ch, CURLOPT_USERPWD, $options['httpAuth']['username'].':'.$options['httpAuth']['password']);
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+	}
 	
 	if (!ini_get('safe_mode') && !ini_get('open_basedir')){
 		@curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
@@ -74,7 +80,6 @@ function doCall($URL, $data, $timeout=DEFAULT_MAX_CLIENT_REQUEST_TIMEOUT, $optio
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, base64_encode(serialize($data)));
 	}
-	
 	
 	$microtimeStarted 	= microtime(true);
 	$response 			= curl_exec($ch);
@@ -176,18 +181,23 @@ function callURLAsync($url, $params=array()){
 		$parts['port'] = 443;
 		error_reporting(0);
 	}
-	else{
+	elseif($parts['port']==''){
 		$parts['port'] = 80;
 	}	
 	  
     $fp = @fsockopen($parts['host'], $parts['port'], $errno, $errstr, 30);
 	if(!$fp) return array('status' => false, 'resource' => !empty($fp) ? true : false, 'errorNo' => 'unable_to_intiate_fsock', 'error' => 'Unable to initiate FsockOpen');
 	if($errno > 0) return array('status' => false, 'errorNo' => $errno, 'error' => $errno. ':' .$errstr);
+	
+	$settings = Reg::get('settings');
 
     $out = "POST ".$parts['path']." HTTP/1.0\r\n";
     $out.= "Host: ".$host."\r\n";
-	$out.= "User-agent: " . "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13". "\r\n";
-    $out.= "Content-Type: application/x-www-form-urlencoded\r\n";
+	if(!empty($settings['httpAuth']['username'])){
+		$out.= "Authorization: Basic ".base64_encode($settings['httpAuth']['username'].':'.$settings['httpAuth']['password'])."\r\n";
+	}
+	$out.= "User-agent: " . "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:10.0) Gecko Firefox/10.0"."\r\n";
+    $out.= "Content-Type: application/x-www-form-urlencoded\r\n"; 
     $out.= "Content-Length: ".strlen($post_string)."\r\n";
     $out.= "Connection: Close\r\n\r\n";
     if (isset($post_string)) $out.= $post_string;
@@ -195,8 +205,12 @@ function callURLAsync($url, $params=array()){
     $is_written = fwrite($fp, $out);
 	if(!$is_written){
 		return array('status' => false, 'writable' => false);
+	}	
+	
+	if($settings['enableFsockFget'] == 1){
+		fgets($fp, 128);
 	}
-
+	
     fclose($fp);
 	return array('status' => true);
 }
@@ -220,17 +234,22 @@ function fsockSameURLConnectCheck($url){
 		$parts['port'] = 443;
 		error_reporting(0);
 	}
-	else{
+	elseif($parts['port']==''){
 		$parts['port'] = 80;
-	}	
+	}
 	  
     $fp = @fsockopen($parts['host'], $parts['port'], $errno, $errstr, 30);
 	if(!$fp) return array('status' => false, 'resource' => !empty($fp) ? true : false, 'errorNo' => 'unable_to_intiate_fsock', 'error' => 'Unable to initiate FsockOpen');
 	if($errno > 0) return array('status' => false, 'errorNo' => $errno, 'error' => $errno. ':' .$errstr);
-
+	
+	$settings = Reg::get('settings');
+	
     $out = "POST ".$parts['path']." HTTP/1.0\r\n";
     $out.= "Host: ".$host."\r\n";
-	$out.= "User-agent: " . "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13". "\r\n";
+	if(!empty($settings['httpAuth']['username'])){
+		$out.= "Authorization: Basic ".base64_encode($settings['httpAuth']['username'].':'.$settings['httpAuth']['password'])."\r\n";
+	}
+	$out.= "User-agent: " . "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:10.0) Gecko Firefox/10.0". "\r\n";
     $out.= "Content-Type: application/x-www-form-urlencoded\r\n";
     $out.= "Content-Length: ".strlen($post_string)."\r\n";
     $out.= "Connection: Close\r\n\r\n";
@@ -247,14 +266,18 @@ function fsockSameURLConnectCheck($url){
         $temp .= fgets($fp, 128);
     }
 	
+	 fclose($fp);
+	
 	if(strpos($temp, 'same_url_connection') !== false){
 		return array('status' => true);
 	}
+	elseif(strpos($temp, 'WWW-Authenticate:') !== false){
+		return array('status' => false, 'errorNo' => 'authentication_required', 'error' => 'Your IWP Admin Panel has folder protection.<br><a onclick="$(\'#settings_btn\').click();$(\'#authUsername\').focus();">Set the credentials</a> in settings -> Folder protection.');
+	}
 	else{
 		return array('status' => false, 'errorNo' => 'unable_to_verify', 'error' => 'Unable to verify content');
-	}
-	
-    fclose($fp);
+	}	
+   
 }
 
 function filterParameters($array) {
@@ -570,7 +593,6 @@ function protocolRedirect(){
 }
 
 function checkOpenSSL(){
-			
 	if(!function_exists('openssl_verify')){
 		return false;
 	}

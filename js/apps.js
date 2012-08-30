@@ -4,7 +4,9 @@
  * www.revmakx.com											*
  *															*
  ************************************************************/
-
+var totalWindowHeight='';
+var totalWindowWidth='';
+var bottomFullBar=0;
 var manage = {};
 var activeItem='plugins';
 var g1 = 'w1,w2,w3,w4'; // the groups with site id seperated.
@@ -117,11 +119,63 @@ function getPropertyCount(obj) {
 
     return count;
 }
+function bottomToolBarShow()
+{
+	dynamicResize();
+	
+}
+function bottomToolBarHide()
+{
+	$("#bottom_sites_cont").hide();
+	$(".showFooterSelector").removeClass('pressed');
+}
+function dynamicResize(forceAction)
+{
+	if(forceAction==undefined)
+	forceAction=0;
+	if($('[role="dialog"]').is(":visible") && forceAction==0)
+	return false;
+	
+	var totalWindowHeight=heightVal=$(window).height();
+
+var totalWindowWidth=heightVal=$(window).width();
+var totalWindowHalfWidth = Math.round(totalWindowWidth/2);
+
+if(totalWindowWidth<1400)
+{
+
+$(".social_love").hide();
+}
+else
+$(".social_love").show();
+
+if(totalWindowWidth>=1250)
+{
+bottomFullBar=1;
+	$("#dynamic_resize").css({"margin-left":"260px"});
+	$("#bottom_toolbar #bottom_sites_cont").height(totalWindowHeight-32).css("margin-top","-"+(totalWindowHeight-35)+"px").show();
+	$("#bottom_toolbar #bottom_sites_cont #bottom_left,#bottom_toolbar #bottom_sites_cont #bottom_right").height(totalWindowHeight-34);	
+	$("#bottom_toolbar #bottom_sites_cont .list_cont").height(totalWindowHeight-112);	
+	$("#bottomToolBarSelector .bg_yellow").removeClass('bg_yellow');
+	$(".showFooterSelector").addClass('pressed');
+	var newLoadingWidth = parseInt(totalWindowHalfWidth)+parseInt(130);
+	$("#loadingDiv").css('left',newLoadingWidth);
+}
+else {
+	bottomFullBar=0;
+	$("#dynamic_resize").css({"margin-left":"0"});
+	$("#bottom_toolbar #bottom_sites_cont").height(401).css("margin-top","-400px").show();
+	$("#bottom_toolbar #bottom_sites_cont #bottom_left,#bottom_toolbar #bottom_sites_cont #bottom_right").height(401);	
+	$("#bottom_toolbar #bottom_sites_cont .list_cont").height(324);	
+	$("#loadingDiv").css('left',totalWindowHalfWidth);
+	
+}
+}
 function closeDialogs(type) // type 1 for update center 2 for settings dialog
 {
 	if($('#ui-tooltip-manageGroupsQtip').length>0)
 $(".toggle_manage_groups").qtip('destroy');
-if(groupEditFlag!=1)
+if(groupEditFlag!=1 && bottomFullBar!=1)
 {
 $("#bottom_sites_cont").hide();
 resetBottomToolbar();
@@ -231,8 +285,12 @@ var gwpjson = mainJson.coreView.core;
 }
 function resetBottomToolbar()
 {
+	if(bottomFullBar!=1)
+	{
 	$(".showFooterSelector").removeClass('pressed');
 	$("#bottom_sites_cont").hide();
+	}
+	$("#bottomToolBarSelector .bg_yellow").removeClass('bg_yellow');
 	$("#bottomToolbarOptions").remove();
 	
 }
@@ -256,11 +314,34 @@ setTimeout(function () {	$("#modalDiv").dialog("close");},1000);
 	resetVars(data);
 	refreshStats(data,1);
 }
+function processEditSite(data)
+{
+	$(".addSiteButton").removeClass('disabled');
+	$("#modalDiv .btn_loadingDiv").remove();
+	if(data.data.updateSite==false)
+	{
+	var errContent='<span id="addSiteErrorMsg"><span class="fail_icon"></span>'+errorMsg+'</span>';
+	$("#addSiteSprite").after(errContent);
+	}
+	else
+	{
+	$(".add_site.form_cont").html('<span id="addSiteSuccessMsg"><span class="success_icon"></span>Site successfully edited.</span>');
+	$(".addSiteButton").hide();
+	setTimeout(function () {	$("#modalDiv").dialog("close");},2000);
+	resetVars(data);
+	refreshStats(data,1);
+	}
+	
+}
 function processAddSite(data)
 {
 	$(".addSiteButton").removeClass('disabled');
 	$("#modalDiv .btn_loadingDiv").remove();
+	
+	
+	
 	var errdata=data.actionResult.detailedStatus[0];
+	
 	if(errdata.status!='success')
 	{
 		if(errdata.error=='main_plugin_connection_error')
@@ -279,11 +360,17 @@ function processAddSite(data)
 	}
 	else
 	{
-	$(".add_site.form_cont").html('<span id="addSiteSuccessMsg"><span class="success_icon"></span>Voila! Your site has been added successfully.</span>');
-	$(".addSiteButton").hide();
-	setTimeout(function () {	$("#modalDiv").dialog("close");},2000);
+	
+	$("#modalDiv").dialog("close");
+	
+	
 	resetVars(data);
 	refreshStats(data,1);
+	$("#bottom_sites_cont").show();
+	$(".showFooterSelector").addClass("pressed");
+	$("#bottomToolBarSelector #bottom_left .nano").nanoScroller({ scroll: 'bottom' });
+	$("#bottomToolBarSelector #bottom_left .bottomSites").last().effect("highlight", {}, 3000);
+	
 	}
 }
 function updateCountRefresh()
@@ -295,7 +382,7 @@ function processClientUpdate(data)
 	clientUpdateSites=data;
 	var content='<div class="dialog_cont update_client_plugin"> <div class="th rep_sprite"> <div class="title droid700">IMPORTANT UPDATE</div> <a class="cancel rep_sprite_backup notNowUpdate">cancel</a></div> <div style="padding:20px;"><div style="text-align:center;line-height: 20px;" >An important update to the <span class="droid700">IWP Client Plugin</span> is available.<div>We <span class="droid700">highly recommend</span> that you update it on all your sites.</div></div></div> <div class="clear-both"></div> <div class="th_sub rep_sprite" style="border-top:1px solid #c6c9ca;"><div class="btn_action float-right"><a class="rep_sprite" id="updateClientConfirm">Update Now</a></div> <span class="float-right cancel notNowUpdate" >Not Now</span> </div> </div>';
 	$("#modalDiv").dialog("destroy");
-	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false});
+	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false, open: function(event, ui) { bottomToolBarHide(); },close: function(event, ui) {bottomToolBarShow(); }});
 }
 function refreshStats(data,refreshClientUpdate)
 {
@@ -306,6 +393,7 @@ function refreshStats(data,refreshClientUpdate)
 	$("#reloadStats").removeClass('disabled');
 	$("#reloadStats").closest('div').removeClass('disabled');
 	$(".btn_reload .btn_loadingDiv ").remove();
+	$("#clearPluginCache").removeClass('active');
 	mainJson=data.data.getSitesUpdates;
  	sitesjson = mainJson.siteView;
 	pluginsjson = mainJson.pluginsView.plugins;
@@ -360,17 +448,24 @@ function createUploader(){
                 debug: true
             });           
         }
-function showBackupOptions(object)
+function showBackupOptions()
 {
-	if(!isSiteSelected(object))
+	$(".th_btm_info").remove();
+	var count=isSiteSelected();
+	if(!count)
 	$("#enterBackupDetails").addClass('disabled clickNone');
 	else
+	{
+		
+	if(count>1)
+	$("#enterBackupDetails").before('<div class="th_btm_info rep_sprite_backup">If the selected sites are on the same server, make sure it has enough resources to handle the backing up process.</div>');
 	$("#enterBackupDetails").removeClass('disabled clickNone');
+	}
 $("#modalDiv").dialog( "option", "position", 'center' );
 }
-function showItemOptions(object)
+function showItemOptions()
 {
-	if(!isSiteSelected(object))
+	if(!isSiteSelected())
 	{
 	$(".optionsContent").hide();
 	$(".advancedInstallOptions").hide();
@@ -404,10 +499,11 @@ footer: true,
   change: function (value, label) {
    filterByGroup(this,value);
   }
-  
+
 });
  $(".toggle_manage_groups").qtip({id:"toggleGroupQtip",content: { text: 'Manage Groups' }, position: { my: 'bottom center', at: 'top center',  adjust:{ y: -6} }, show: { event: 'mouseenter' }, hide: { event: 'mouseleave' }, style: { classes: 'ui-tooltip-shadow ui-tooltip-dark',  tip: {  corner: true, width: 10, height:5} } });
 	resetGroup();
+	  dynamicResize();
 }
 // From plugin theme manage / install panel
 function processCheckUpdate(data)
@@ -714,15 +810,14 @@ function applyChanges(object)
 function isSiteSelected(object) // Used for managepanel 
 {
 	
-	var closestVar=$(object).closest('.siteSearch');
 	
-	if($(".website_cont",closestVar).hasClass('active'))
-	{
-		
-	return true;
-	}
+	
+	var count=$(".website_cont.active",'.siteSearch').length;
+	if(count>0)
+	return count;
 	else
 	return false;
+	
 	
 }
 function triggerSettingsButton()
@@ -879,8 +974,8 @@ $.ajax({
  },  // End success
   error: function() {
 	    console.log("Error");
-	  if(callback!=undefined)
-   eval(callback+"('')");
+	  /*if(callback!=undefined)
+   eval(callback+"('')");*/
 	  
   }
 });
@@ -901,6 +996,7 @@ function doHistoryCall(url,data,callback,dataType)
 	data['requiredData']['getHistoryPanelHTML']=1;
 	$("#process_queue").addClass('in_progress');
 	$("#historyQueue").show();
+	
 	$(".queue_ind_item_cont .content").prepend('<div class="queue_ind_item historyItem">Adding to queue ...<div class="clear-both"></div></div>');
 	
 	if(dataType==undefined)
@@ -1222,20 +1318,29 @@ function groupGenerate(type,randVal)
 	if(randVal==undefined)
 	randVal=incrementRand;
 	  content='<select name="rand_'+randVal+'" class="select_group'+toolVar+'" tabindex="2"><option value="0">All Websites</option>';
-   
+   var checkTwo=0;
 	$.each(group, function(i, object) {
 		
-		if(type==2)
-		gcontent=gcontent+'<div class="ind_group js_addSite" gid="'+i+'"><a>'+object.name+'</a></div>';
 		
+		if(type==2)
+		{
+		/*if(checkTwo % 2==0)
+		gcontent=gcontent+'<div class="ind_group_set">';*/
+		gcontent=gcontent+'<div class="ind_group js_addSite g'+i+'" gid="'+i+'"><a>'+object.name+'</a></div>';
+		/*if(checkTwo % 2==1)
+		gcontent=gcontent+'<div class="clear-both"></div></div>';
+		checkTwo=checkTwo+1;*/
+		}
 	    content=content+'<option value="'+i+'">'+object.name+'</option>';
 		
 	});
+	/*if(type==2 && checkTwo % 2==0)
+	gcontent=gcontent+'<div class="clear-both"></div></div>';*/
 	content=content+'</select>';
 	incrementRand++;
 	if(type==2)
 	{
-		gcontent='<div class="group_selector"><div class="content">'+gcontent+'</div><div class="clear-both"></div> </div>';
+		gcontent='<div class="group_selector"><div class="content" style="margin-bottom:-1px">'+gcontent+'</div><div class="clear-both"></div> </div>';
 		return gcontent;
 	}
 	else

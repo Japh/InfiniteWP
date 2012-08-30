@@ -79,12 +79,15 @@ function getSitesData($siteIDs=false, $where='1'){//for current user
 }
 
 function prepareRequestAndAddHistory($PRP){	
+
+
 	$defaultPRP = array('doNotExecute' 		=> false,
 						'exitOnComplete' 	=> false,
 						'doNotShowUser' 	=> false,//hide in history
 						'directExecute' 	=> false,
 						'signature' 		=> false,
 						'timeout' 			=> DEFAULT_MAX_CLIENT_REQUEST_TIMEOUT,
+						'callOpt'			=> array()
 						);
 						
 	$PRP = array_merge($defaultPRP, $PRP);
@@ -103,11 +106,15 @@ function prepareRequestAndAddHistory($PRP){
 						 'action' => $action,
 						 'events' => $events,
 						 'URL' => $siteData['URL'],
-						 'timeout' => $timeout);	
+						 'timeout' => $timeout);
 	if($doNotShowUser){
 		$historyData['showUser'] = 'N';
 	}
+	if(!empty($siteData['httpAuth'])){
+		$callOpt['httpAuth'] = @unserialize($siteData['httpAuth']);
+	}
 	
+	$historyData['callOpt'] = serialize($callOpt);
 	$historyID = addHistory($historyData, $historyAdditionalData);
 		
 	if($signature === false){
@@ -125,17 +132,17 @@ function prepareRequestAndAddHistory($PRP){
 	DB::insert("?:history_raw_details", array('historyID' => $historyID, 'request' => base64_encode(serialize($requestData)), 'panelRequest' => serialize($_REQUEST) ) );
 	
 	if($directExecute){
+		set_time_limit(0);		
 		echo 'direct_execute';
-		executeRequest($historyID, $type, $action, $siteData['URL'], $requestData, $timeout);
+		executeRequest($historyID, $type, $action, $siteData['URL'], $requestData, $timeout, true, $callOpt);
 	}
 	else{
 		echo 'async_call_it_should_be';
-		if($exitOnComplete){ Reg::set('currentRequest.exitOnComplete', true); }
+		if($exitOnComplete){ set_time_limit(0); Reg::set('currentRequest.exitOnComplete', true); }
 	}
 }
 
-function executeRequest($historyID, $type='', $action='', $URL='', $requestData='', $timeout='', $isPluginResponse=true){
-	
+function executeRequest($historyID, $type='', $action='', $URL='', $requestData='', $timeout='', $isPluginResponse=true, $callOpt=array()){	
 	
 	if(empty($type) || empty($action) || empty($URL) || empty($requestData)){
 		$historyData = getHistory($historyID);
@@ -145,12 +152,13 @@ function executeRequest($historyID, $type='', $action='', $URL='', $requestData=
 		$URL = $historyData['URL'];
 		$timeout =  $historyData['timeout'];
 		$requestData = unserialize(base64_decode($historyRawDetails['request']));
+		$timeout =  $historyData['timeout'];
+		$callOpt = @unserialize($historyData['callOpt']);
 	}
 	updateHistory(array('microtimeInitiated' => microtime(true), 'status' => 'running'), $historyID);
 
 	$updateHistoryData = array();
-	list($rawResponseData, $updateHistoryData['microtimeStarted'], $updateHistoryData['microtimeEnded'], $curlInfo)  = doCall($URL, $requestData, $timeout);
-	
+	list($rawResponseData, $updateHistoryData['microtimeStarted'], $updateHistoryData['microtimeEnded'], $curlInfo)  = doCall($URL, $requestData, $timeout, $callOpt);
 	DB::update("?:history_raw_details", array('response' => addslashes($rawResponseData), 'callInfo' => serialize($curlInfo)), "historyID = ".$historyID);
 		
 	//checking request http executed
@@ -285,7 +293,6 @@ function clearUncompletedTask(){
 	$where .= " AND (H.microtimeInitiated + H.timeout + ".$addtionalTime.") < ".$time."";
 	$where .= " AND H.microtimeInitiated > 0";//this will prevent un-initiated task from clearing
 	DB::update("?:history H, ?:history_additional_data HAD", $updateData, $where);
-	//echo DB::getLastQuery();
 }
 //Login .
 function userLogin($params){
@@ -487,7 +494,7 @@ function getReportIssueData($actionID){
 	
 	$reportIssue['historyAdditional'] = DB::getArray("?:history_additional_data HAD, ?:history H", "HAD.*", "H.actionID = '".$actionID."' AND HAD.historyID = H.historyID");
 	$reportIssue['historyRaw'] = DB::getArray("?:history_raw_details HRD, ?:history H", "HRD.*", "H.actionID = '".$actionID."' AND HRD.historyID = H.historyID");
-	$reportIssue['siteDetails'] = DB::getArray("?:sites", "URL, WPVersion, pluginVersion, network, parent", "siteID IN (".implode(',',$siteIDs).")", "URL");
+	$reportIssue['siteDetails'] = DB::getArray("?:sites", "URL, WPVersion, pluginVersion, network, parent, IP", "siteID IN (".implode(',',$siteIDs).")", "URL");
 	$reportIssue['settings'] = DB::getRow("?:settings", "general", "1");
 	
 	$reportIssue['fsockSameURLConnectCheck'] = fsockSameURLConnectCheck(APP_URL.'execute.php');
@@ -508,6 +515,29 @@ function getReportIssueData($actionID){
 		unset($datas['signature']);
 		$reportIssue['historyRaw'][$key]['request'] = base64_encode(serialize($datas));
 	}
+	
+	//to find hostType
+	$reportIssue['hostType'] = 'unknown';
+	
+	if(!empty($_SERVER['SERVER_ADDR'])){
+		$SERVER_ADDR = $_SERVER['SERVER_ADDR'];
+	}
+	else{
+		$SERVER_ADDR = gethostbyname($_SERVER['HTTP_HOST']);
+	}
+	
+	if(!empty($SERVER_ADDR)){
+		if(IPInRange($SERVER_ADDR, '127.0.0.0-127.255.255.255')){
+			$reportIssue['hostType'] = 'local';
+		}
+		elseif(IPInRange($SERVER_ADDR, '10.0.0.0-10.255.255.255') || IPInRange($SERVER_ADDR, '172.16.0.0-172.31.255.255') || IPInRange($SERVER_ADDR, '192.168.0.0-192.168.255.255')){
+			$reportIssue['hostType'] = 'private';
+		}
+		else{
+			$reportIssue['hostType'] = 'public';
+		}
+	}
+	//to find hostType - Ends
 	
 	$_SESSION['reportIssueTemp'][$actionID] = $reportIssue;
 	
@@ -590,7 +620,7 @@ function sendAppMail($params, $contentTPL, $options=array()){
 	
 	$subject = $content[0];
 	$message = $content[1];
-		
+	
 	$user = DB::getRow("?:users", "email, name", "1 ORDER BY userID ASC LIMIT 1");
 	
 	return sendMail($user['email'], $user['name'], $user['email'], $user['name'], $subject, $message, $options);	
@@ -672,6 +702,14 @@ function updatesNotificationMailSend($force=false){
 	//getting updateInformation
 	$sitesUpdates = panelRequestManager::getSitesUpdates();
 	
+	$hiddenUpdates = panelRequestManager::getHide();
+	
+	foreach($hiddenUpdates as $siteID => $value){
+		foreach($value as $d){
+			unset($sitesUpdates['siteView'][$siteID][$d['type']][$d['URL']]);
+		}
+	}
+
 	$params = array('sitesUpdates' => $sitesUpdates,  'updatesNotificationMail' => $updatesNotificationMail, 'updateNotificationDynamicContent' => getOption('updateNotificationDynamicContent'));
 	$isSent = sendAppMail($params, 'email/updatesNotification.tpl.php');
 	
@@ -689,20 +727,14 @@ function checkUpdate($force=false, $checkForUpdate=true){
 	
 	$currentTime = time();
 	if(!$force){
-		if( ($currentTime - getOption('updateLastCheck')) < 86400 ){ //86400 => 1 day in seconds
-			if(empty($_SESSION['updateAvailable'])){
-				$updateAvailable = getOption('updateAvailable');
-				if(!empty($updateAvailable)){
-					$updateAvailable = @unserialize($updateAvailable);
-					if($updateAvailable == 'noUpdate'){
-						return false;
-					}
-					$_SESSION['updateAvailable'] = $updateAvailable;
-					return $updateAvailable;
+		if( ($currentTime - getOption('updateLastCheck')) < 86400 ){ //86400 => 1 day in seconds			
+			$updateAvailable = getOption('updateAvailable');
+			if(!empty($updateAvailable)){
+				$updateAvailable = @unserialize($updateAvailable);
+				if($updateAvailable == 'noUpdate'){
+					return false;
 				}
-			}
-			else{
-				return $_SESSION['updateAvailable'];
+				return $updateAvailable;
 			}
 			return false;
 		}
@@ -710,7 +742,7 @@ function checkUpdate($force=false, $checkForUpdate=true){
 	
 	if(!$checkForUpdate){
 		return false;
-	}	
+	}
 
 	$URL = getOption('serviceURL').'checkUpdate.php';	
 	$URL .= '?appVersion='.APP_VERSION.'&appInstallHash='.APP_INSTALL_HASH;
@@ -738,17 +770,15 @@ function checkUpdate($force=false, $checkForUpdate=true){
 	}
 	else{
 		updateOption('updateAvailable', serialize($result['checkUpdate']));
-		$_SESSION['updateAvailable'] = $result['checkUpdate'];		
 		return $result['checkUpdate'];
 	}
 }
 
 function processAppUpdate(){//download and install update
-	if(empty($_SESSION['updateAvailable'])){
-		return false;	
+	$updateAvailable = checkUpdate(false, false);
+	if(empty($updateAvailable)){
+		return false;
 	}
-	
-	$updateAvailable = $_SESSION['updateAvailable'];
 	
 	$newVersion = $updateAvailable['newVersion'];
 	if(version_compare(APP_VERSION, $newVersion) !== -1){
@@ -807,7 +837,6 @@ function processAppUpdate(){//download and install update
 			
 			if($updateFinalizeStatus == true){
 				
-				unset($_SESSION['updateAvailable']);
 				@unlink($updateZip);
 				updateOption('updateAvailable', '');
 				
@@ -868,6 +897,9 @@ function getResponseMoreInfo($historyID){
     $endStr = '<ENDIWPHEADER';
 
 	$response_start = stripos($return, $startStr);	
+	if($response_start === false){
+		return $return;
+	}
 	$str = substr($return, 0, $response_start);
 	
 	$response_End = stripos($return, $endStr);
@@ -911,7 +943,7 @@ function addNotification($type, $title, $message, $state='T', $callbackOnClose='
 	
 	if(!empty($offlineNotifications)){
 		//save in db
-		updateOption('offlineNotifications', $offlineNotifications);
+		updateOption('offlineNotifications', serialize($offlineNotifications));
 	}
 }
 

@@ -9,6 +9,7 @@
 class manageClientsUpdate {
 	
 	public static function updateAllProcessor($siteIDs, $allParams){
+		
 		if(empty($allParams)) return false;
 			
 		$requestAction = 'do_upgrade';
@@ -27,21 +28,46 @@ class manageClientsUpdate {
 			$siteIDs = array($siteID);
 			$events = 0;
 			$requestParams = $historyAdditionalData = array();
-			foreach($siteParams as $PTC => $PTCParams){
+			$timeout = DEFAULT_MAX_CLIENT_REQUEST_TIMEOUT;
+			
+			foreach($siteParams as $PTC => $PTCParams){				
+				
 				if($PTC == 'plugins'){
-					foreach($sitesStats[$siteID]['upgradable_plugins'] as $item){
-						if(in_array($item->file, $PTCParams)){
-							$requestParams['upgrade_plugins'][] = $item;
-							$historyAdditionalData[] = array('uniqueName' => $item->file, 'detailedAction' => 'plugin');
-							$events++;
+					
+					if(!empty($sitesStats[$siteID]['premium_updates']))
+					{
+						foreach($sitesStats[$siteID]['premium_updates'] as $item){						
+							if(in_array($item['slug'], $PTCParams)){
+								$uniqueName = $item['Name'];
+								$requestParams['upgrade_plugins'][] = array_change_key_case($item, CASE_LOWER);
+								$historyAdditionalData[] = array('uniqueName' => $uniqueName, 'detailedAction' => 'plugin');
+								$timeout += 20;
+								$events++;
+							}
+						}
+					}
+					
+					if(!empty($sitesStats[$siteID]['upgradable_plugins']))
+					{
+						foreach($sitesStats[$siteID]['upgradable_plugins'] as $item){
+							if(in_array($item->file, $PTCParams)){
+								 $uniqueName = $item->file ;
+								 $requestParams['upgrade_plugins'][] = $item;
+								 $historyAdditionalData[] = array('uniqueName' => $uniqueName, 'detailedAction' => 'plugin');
+								 $timeout += 20;
+								 $events++;
+							}
 						}
 					}
 				}
+				
 				elseif($PTC == 'themes'){
 					foreach($sitesStats[$siteID]['upgradable_themes'] as $item){
-						if(in_array($item['theme_tmp'], $PTCParams)){
+						if(in_array($item['theme_tmp'], $PTCParams) || in_array($item['name'], $PTCParams)){
 							$requestParams['upgrade_themes'][] = $item;
-							$historyAdditionalData[] = array('uniqueName' => $item['theme_tmp'], 'detailedAction' => 'theme');
+							$uniqueName = $item['theme_tmp'] ? $item['theme_tmp'] : $item['name'];
+							$historyAdditionalData[] = array('uniqueName' => $uniqueName, 'detailedAction' => 'theme');
+							$timeout += 20;
 							$events++;
 						}
 					}
@@ -50,6 +76,7 @@ class manageClientsUpdate {
 					if($sitesStats[$siteID]['core_updates']->current == $PTCParams){
 						$requestParams['wp_upgrade'] = $sitesStats[$siteID]['core_updates'];
 						$historyAdditionalData[] = array('uniqueName' => 'core', 'detailedAction' => 'core');
+						$timeout += 120;
 						$events++;
 					}
 				}
@@ -65,6 +92,7 @@ class manageClientsUpdate {
 			$PRP['action'] 			= $action;
 			$PRP['events'] 			= $events;
 			$PRP['historyAdditionalData'] 	= $historyAdditionalData;
+			$PRP['timeout'] 		= $timeout;
 						
 			prepareRequestAndAddHistory($PRP);
 		}	
@@ -84,30 +112,43 @@ class manageClientsUpdate {
 		}		  
 		else{
 			foreach($responseData['success'] as $PTC => $PTCResponse){
-				if($PTC == 'core'){
+				if(!empty($PTCResponse['error'])){
+						$historyAdditionalUpdateData['status'] = 'error';
+						$historyAdditionalUpdateData['errorMsg'] = $PTCResponse['error'];
+						
+						DB::update("?:history_additional_data", $historyAdditionalUpdateData, "historyID=".$historyID);
+					}
 					
+				if($PTC == 'core'){
 					$historyAdditionalUpdateData = array();
 					$historyAdditionalUpdateData['status']= 'error';
 					
 					if(trim($PTCResponse['upgraded']) == 'updated'){
 						$historyAdditionalUpdateData['status'] = 'success';
 					}
-					elseif(!empty($PTCResponse['error'])){
+					/*elseif(!empty($PTCResponse['error'])){
 						$historyAdditionalUpdateData['status'] = 'error';
 						$historyAdditionalUpdateData['errorMsg'] = $PTCResponse['error'];
-					}
+					}*/
 					
 					DB::update("?:history_additional_data", $historyAdditionalUpdateData, "historyID=".$historyID." AND uniqueName = 'core'");
 				}
 				elseif($PTC == 'plugins' || $PTC == 'themes'){
 					foreach($PTCResponse['upgraded'] as $name => $success){
-						if($success){
+						
+						
+		
+						if($success == 1){
 							$status = 'success';
-							DB::update("?:history_additional_data", array('status' => $status), "historyID=".$historyID." AND uniqueName = '".$name."'");
+							DB::update("?:history_additional_data", array('status' => $status), "historyID=".$historyID);
+						}
+						elseif(!empty($success)){
+							$status = 'error';
+							DB::update("?:history_additional_data", array('status' => $status, 'errorMsg' => $success), "historyID=".$historyID);
 						}
 						else{
 							$status = 'error';
-							DB::update("?:history_additional_data", array('status' => $status, 'error' => 'unknown', 'errorMsg' => 'An unknown error occured.'), "historyID=".$historyID." AND uniqueName = '".$name."'");
+							DB::update("?:history_additional_data", array('status' => $status, 'error' => 'unknown', 'errorMsg' => 'An Unknow error occured.'), "historyID=".$historyID);
 						}
 					}
 				}
@@ -125,17 +166,21 @@ class manageClientsUpdate {
 	}
 	
 	public static function updateClientProcessor($siteIDs, $params){
+		
+		
 		$requestAction = 'update_client';
 		$type = 'clientPlugin';
 		$action = 'update';
+		$events = 1;
 		
 		$historyAdditionalData = array();
 		$historyAdditionalData[] = array('detailedAction' => 'update', 'uniqueName' => 'clientPlugin');	
 		
 		
 		foreach($siteIDs as $siteID){
-						
+			
 			if(!empty($_SESSION['clientUpdates']['sitesUpdate'][$siteID])){
+				
 				$siteData = getSiteData($siteID);
 				$requestParams = array('download_url' => $_SESSION['clientUpdates']['sitesUpdate'][$siteID]);
 						
@@ -146,12 +191,10 @@ class manageClientsUpdate {
 				$PRP['type'] 			= $type;
 				$PRP['action'] 			= $action;
 				$PRP['events'] 			= $events;
-				$PRP['historyAdditionalData'] 	= $historyAdditionalData;		
+				$PRP['historyAdditionalData'] 	= $historyAdditionalData;
 							
 				prepareRequestAndAddHistory($PRP);
-			
 			}
-			
 		}
 	}
 	
@@ -174,10 +217,8 @@ class manageClientsUpdate {
 				
 				panelRequestManager::handler($allParams);
 			}
-			
 		}
 	}
-
 }
 
 manageClients::addClass('manageClientsUpdate');

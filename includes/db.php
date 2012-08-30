@@ -137,8 +137,11 @@ class DB{
 	
 	private static function insertReplace($query){
 		
-		if(self::doQuery($query))
-			return self::lastInsertID();
+		if(self::doQuery($query)){
+			$lastInsertID = self::lastInsertID();
+			if(!empty($lastInsertID)) return $lastInsertID;
+			return true;
+		}
 		return false;
 	}
 	

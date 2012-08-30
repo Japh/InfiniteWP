@@ -51,6 +51,7 @@ function executeJobs(){
 		  
 		  //check already request are running in allowed level 
 		  if($runningRequestByIP[ $request['IP'] ] >= MAX_SIMULTANEOUS_REQUEST_PER_IP /*|| $runningRequestByServer[ $request['serverGroup'] ] >=  MAX_SIMULTANEOUS_REQUEST_PER_SERVERGROUP*/){
+			 
 			  
 			  if($runningRequestByIP[ $request['IP'] ] >= MAX_SIMULTANEOUS_REQUEST_PER_IP)
 			  echo 'MAX_SIMULTANEOUS_REQUEST_PER_IP<br>';
@@ -67,6 +68,11 @@ function executeJobs(){
 		  
 		  if($isUpdated){
 			  //ready to run a child php to run the request
+			  
+			  if($lastIPRequestInitiated == $request['IP']){
+				  usleep((TIME_DELAY_BETWEEN_REQUEST_PER_IP * 1000));
+			  }
+			  
 			 // echo '<br>executing child process';
 			  if(defined('IS_EXECUTE_FILE')){
 				  //echo '<br>executing_directly';
@@ -76,20 +82,19 @@ function executeJobs(){
 			  }
 			  else{
 				 // echo '<br>executing_async';
-				 $callAsyncInfo = callURLAsync(APP_URL.EXECUTE_FILE, array('historyID' =>  $request['historyID'], 'actionID' => $request['actionID']));	
+				 $callAsyncInfo = callURLAsync(APP_URL.EXECUTE_FILE, array('historyID' =>  $request['historyID'], 'actionID' => $request['actionID']));					 
 				 onAsyncFailUpdate($request['historyID'], $callAsyncInfo);
 				 // echo '<pre>callExecuted:'; var_dump($callAsyncInfo); echo'</pre>';
 			  }
-			 	
+			 			 	
 			  $requestInitiated++; 
 			  
 			  $runningRequestByIP[ $request['IP'] ]++;
 			 // $runningRequestByServer[ $request['serverGroup'] ] ++;
 			  $totalCurrentRunningRequest++;
 			  
-			  if($lastIPRequestInitiated == $request['IP']){
-				  usleep(TIME_DELAY_BETWEEN_REQUEST_PER_IP);
-			  }
+			  
+			  $lastIPRequestInitiated = $request['IP'];
 			  
 			  if($isExecuteRequest){ break; }//breaking here once executeRequest runs(direct call) next forloop job might be executed by other instance because that job loaded in array which already loaded from DB, still only the job inititated here will run  $isUpdated = DB::affectedRows();
 		  }

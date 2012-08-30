@@ -25,7 +25,7 @@ class manageClientsBackup{
 			
 			if(!empty($accountInfo)){
 			   $secure_data = serialize($accountInfo);		 
-			   $secure_data_array = str_split($secure_data, 96);	//max length 117
+			   $secure_data_array = str_split($secure_data, 96); //max length 117
 				   
 			   $secure_data_encrypt = array();
 			   

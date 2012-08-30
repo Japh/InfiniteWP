@@ -401,12 +401,12 @@ function loadAddSite()
 	var extra='';
 	if(group!=null && group!=undefined && group.length!=0)
 	{
-	extra='<div class="tr assignGroupItem" id="addSiteGroupsPanel"><div class="tl">Existing Groups</div><div class="td"><div class="addSiteGroups">'+groupGenerate(2)+'</div></div><div class="clear-both"></div> </div>';
+	extra='<div class="tr assignGroupItem addSiteToggleDiv" id="addSiteGroupsPanel"><div class="tl">Existing Groups</div><div class="td"><div class="addSiteGroups">'+groupGenerate(2)+'</div></div><div class="clear-both"></div></div>';
 	}
- 	content=content+'<div class="dialog_cont add_site"> <div class="th rep_sprite " id="addSiteSprite"> <div class="title droid700">ADD A WORDPRESS SITE</div> <a class="cancel rep_sprite_backup">cancel</a></div> <div class="add_site form_cont " style="border:0;"> <div class="tr"> <div class="tl">Website URL</div> <div class="td"> <input name="website" type="text" id="websiteURL" value="http://" /> </div> <div class="clear-both"></div> </div> <div class="tr"> <div class="tl ">Admin Username</div> <div class="td"> <input name="" type="text" id="username" /> </div> <div class="clear-both"></div> </div> <div class="tr"> <div class="tl ">Activation Key</div> <div class="td"> <input name="" type="text" id="activationKey" /><div style="color: #737987;line-height: 16px;">The Activation Key will be displayed every time you activate the IWP Client Plugin on your website.</div> </div> <div class="clear-both"></div> </div><div class="tr"> <div class="tl" id="assignToggleAction"><span>Assign to groups </span><span id="assignToggle">+</span></div> <div class="td"></div> <div class="clear-both"></div> </div> <div class="tr assignGroupItem"> <div class="tl two_liner">New Group<br /> <span style="text-transform:none; font-size:12px;">(separate by comma)</span></div> <div class="td"> <input name="" type="text" class="txtHelp" helptxt="eg. group1, group2" value="eg. group1, group2" id="groupText" style="color:#AAAAAA"/> </div> <div class="clear-both"></div> </div>'+extra+'</div><div class="th_sub rep_sprite"><span class="rep_sprite_backup info float-left">The IWP Client Plugin should be installed on the sites before adding them.</span><div class="btn_action float-right "><a class="rep_sprite addSiteButton">Add Site</a></div></div><div class="clear-both"></div>  </div>';
+ 	content=content+'<div class="dialog_cont add_site"> <div class="th rep_sprite " id="addSiteSprite"> <div class="title droid700">ADD A WORDPRESS SITE</div> <a class="cancel rep_sprite_backup">cancel</a></div> <div class="add_site form_cont " style="border:0;"> <div class="tr"> <div class="tl">Website URL</div> <div class="td"> <input name="website" type="text" id="websiteURL" class="txtHelp onEnter" onenterbtn=".addSiteButton" value="http://" helptxt="http://"  /> </div> <div class="clear-both"></div> </div> <div class="tr"> <div class="tl ">Admin Username</div> <div class="td"> <input name="" type="text" id="username" class="onEnter" onenterbtn=".addSiteButton" /> </div> <div class="clear-both"></div> </div> <div class="tr adminURLDiv" style="display:none" > <div class="tl ">Admin URL</div> <div class="td"> <input name="" type="text" id="adminURL" class="onEnter" onenterbtn=".addSiteButton" /> </div> <div class="clear-both"></div> </div> <div class="tr activationKeyDiv" > <div class="tl ">Activation Key</div> <div class="td"> <input name="" type="text" id="activationKey" class="onEnter" onenterbtn=".addSiteButton" /><div style="color: #737987;line-height: 16px;">The Activation Key will be displayed every time you activate the IWP Client Plugin on your website.</div> </div> <div class="clear-both"></div> </div><div class="tr" style="margin-top: 25px; margin-bottom: 15px;"><div class="tl"></div><div class="td"><span class="toggle_link"><span class="addSiteToggleAction assignToggleAction">Assign to groups</span></span><span class="toggle_link"><span class="addSiteToggleAction folderToggleAction">Folder protection</span></span></div><div class="clear-both"></div> </div><div class="tr folderProtectionItem addSiteToggleDiv" style="display:none"> <div class="tl"></div> <div class="td"> <input name="" type="text" class="txtHelp folder_protect" id="addSiteAuthUsername" helptxt="username" value="username" style="color:#AAAAAA"/> <input name="" type="password" id="addSiteAuthUserPassword" class="txtHelp folder_protect" helptxt="password" value="password" style="color:#AAAAAA"/> </div> <div class="clear-both"></div> </div> <div class="tr assignGroupItem addSiteToggleDiv"> <div class="tl two_liner">New Group<br /> <span style="text-transform:none; font-size:12px;">(separate by comma)</span></div> <div class="td"> <input name="" type="text" class="txtHelp" helptxt="eg. group1, group2" value="eg. group1, group2" id="groupText" style="color:#AAAAAA"/> </div> <div class="clear-both"></div> </div>'+extra+'</div><div class="clear-both"></div><div class="th_sub rep_sprite"><span class="rep_sprite_backup info float-left" id="clientPluginDescription">The IWP Client Plugin should be installed on the sites before adding them.</span><div class="btn_action float-right "><a class="rep_sprite addSiteButton">Add Site</a></div></div><div class="clear-both"></div></div>';
 	$("#modalDiv").dialog("close");
 	$("#modalDiv").dialog("destroy");
-	$('#modalDiv').html(content).dialog({width:'auto', modal:true,position: 'center',resizable: false });
+	$('#modalDiv').html(content).dialog({width:'auto', modal:true,position: 'center',resizable: false,open: function(event, ui) {bottomToolBarHide(); },close: function(event, ui) {bottomToolBarShow(); } });
 	$(".assignGroupItem").hide();
 	
 	
@@ -452,10 +452,10 @@ function loadBackup(multiple,siteID)
 	bkBtn='<div class="btn_action float-right"><a class="rep_sprite" id="backupNow">Backup Now</a></div></div> ';
 	}
 	
-	content='<div class="dialog_cont create_backup create_backup_sitewise"> <div class="th rep_sprite"> <div class="title droid700">CREATE A NEW BACKUP'+siteName+'</div> <a class="cancel rep_sprite_backup">cancel</a></div>  '+extra+'  <div class="float-left" style="padding:20px; width:45%;"> <div class="label">BACKUP NAME</div> <input name="" type="text" id="backupName" /> <div class="checkbox active generalSelect" id="compression">Create zip without compression</div> <div class="checkbox generalSelect" id="databaseOptimize">Optimize database tables before backup</div> </div> <div class="float-left" style="padding:20px; width:45%;"> <div class="backup_what float-left" style="padding:0;"> <div class="label">WHAT?</div> <ul class="btn_radio_slelect float-left" style="margin-bottom:20px"> <li><a class="rep_sprite active optionSelect backupType" id="full">Files & DB</a></li> <li><a class="rep_sprite optionSelect backupType" id="db">DB only</a></li> </ul> <div class="clear-both"></div> <div id="backupDB"><div class="label_sub">Exclude files & folders</div> <input name="" class="txtHelp" id="excludeFiles" type="text" value="eg., old-backup.zip, wp-content/old-backups" helpTxt="eg., old-backup.zip, wp-content/old-backups" style="color:#AAAAAA"> <div class="label_sub">Include folders</div> <input name="" type="text" id="includeFolders" > <div style="font-size:11px; color:#666; margin-top: -12px;">in addition to the default <span class="droid700">wp-admin, wp-content and wp-includes</span> folders.</div></div> </div> </div></div><div class="clear-both"></div> <div class="th rep_sprite" style="border-top:1px solid #c6c9ca; height: 35px;">'+bkBtn+'</div>';
+	content='<div class="dialog_cont create_backup"> <div class="th rep_sprite"> <div class="title droid700">CREATE A NEW BACKUP'+siteName+'</div> <a class="cancel rep_sprite_backup">cancel</a></div>  '+extra+'  <div class="float-left left" style="padding:20px; width:45%;"> <div class="label">BACKUP NAME</div> <input name="" type="text" id="backupName" /> <div class="checkbox active generalSelect" id="compression">Create zip without compression</div> <div class="checkbox generalSelect" id="databaseOptimize">Optimize database tables before backup</div> </div> <div class="float-left right" style="padding:20px; width:45%;"> <div class="backup_what float-left" style="padding:0;"> <div class="label">WHAT?</div> <ul class="btn_radio_slelect float-left" style="margin-bottom:20px"> <li><a class="rep_sprite active optionSelect backupType" id="full">Files & DB</a></li> <li><a class="rep_sprite optionSelect backupType" id="db">DB only</a></li> </ul> <div class="clear-both"></div> <div id="backupDB"><div class="label_sub">Exclude files & folders</div> <input name="" class="txtHelp" id="excludeFiles" type="text" value="eg., old-backup.zip, wp-content/old-backups" helpTxt="eg., old-backup.zip, wp-content/old-backups" style="color:#AAAAAA"> <div class="label_sub">Include folders</div> <input name="" type="text" id="includeFolders" > <div style="font-size:11px; color:#666; margin-top: -12px;">in addition to the default <span class="droid700">wp-admin, wp-content and wp-includes</span> folders.</div></div> </div> </div></div><div class="clear-both"></div> <div class="th rep_sprite" style="border-top:1px solid #c6c9ca; height: 35px;">'+bkBtn+'</div>';
 	$("#modalDiv").dialog("close");
 	$("#modalDiv").dialog("destroy");
-	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false});
+	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false, open: function(event, ui) {bottomToolBarHide(); },close: function(event, ui) {bottomToolBarShow(); }});
 	$(".siteSelectorContainer .nano").nanoScroller({stop: true});
 	$(".siteSelectorContainer .group_items_cont").css('height',$(".siteSelectorContainer .group_items_cont").height()).addClass('nano');
 	$(".siteSelectorContainer .website_items_cont").css('height',$(".siteSelectorContainer .website_items_cont").height()).addClass('nano');
@@ -503,7 +503,7 @@ function loadHistoryPageContent(data)
 }
 function loadBottomToolbarOptions(siteID)
 {
-	var content='<div class="ind_sites_nav" btsiteid="'+siteID+'" id="bottomToolbarOptions"><span id="hiddenhref" style="display:none"></span> <div class="left"> <div class="nav_admin"><a class="link openHere"  sid="'+siteID+'">Open admin here</a><a class="link adminPopout"  sid="'+siteID+'">Open admin <img src="images/open_admin_new.gif" width="10px" height="10px"></a></div> <div class="nav_backup"><a class="link"  sid="'+siteID+'" id="singleBackupNow">Backup Now</a><a class="link"  id="viewBackups" sid="'+siteID+'">View Backups</a></div> </div> <div class="right"> <div class="nav_view_site"><a class="link closeBottomToolBar" href="'+site[siteID].URL+'" target="_blank">View Site</a><a class="link newPost" sid="'+siteID+'">Write new post</a></div> <div class="nav_options"><a class="link_long remove rep_sprite_backup removeSite" sid="'+siteID+'">Remove</a></div> </div> </div>';
+	var content='<div class="ind_sites_nav" btsiteid="'+siteID+'" id="bottomToolbarOptions"><span id="hiddenhref" style="display:none"></span> <div class="left"> <div class="nav_admin"><a class="link openHere"  sid="'+siteID+'">Open admin here</a><a class="link adminPopout"  sid="'+siteID+'">Open admin <img src="images/open_admin_new.gif" width="10px" height="10px"></a></div> <div class="nav_backup"><a class="link"  sid="'+siteID+'" id="singleBackupNow">Backup Now</a><a class="link"  id="viewBackups" sid="'+siteID+'">View Backups</a></div> </div> <div class="right"> <div class="nav_view_site"><a class="link closeBottomToolBar" href="'+site[siteID].URL+'" target="_blank">View Site</a><a class="link newPost" sid="'+siteID+'">Write new post</a></div> <div class="nav_options"><a class="link_long edit_site editSiteBtn rep_sprite_backup" sid="'+siteID+'">Edit site details</a><a class="link_long remove rep_sprite_backup removeSite" sid="'+siteID+'">Remove site</a></div> </div> </div>';
 	$("#bottomToolBarSelector").append(content);
 	
 }
@@ -513,7 +513,7 @@ function loadBackupPopup(data)
 	var content=data.data.getSiteBackupsHTML;
 	$("#modalDiv").dialog("close");
 	$("#modalDiv").dialog("destroy");
-	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false});
+	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false,open: function(event, ui) {bottomToolBarHide(); },close: function(event, ui) {bottomToolBarShow(); }});
 }
 function loadAdminPopout(object,sid)
 {
@@ -535,9 +535,11 @@ function loadPreview(url)
 	$("#loadingDiv").show();
 	setTimeout(function () {	$("#loadingDiv").hide();},1000);
 	var content = '<div class="preview_box"><iframe src="'+url+'" height="'+heightVal+'px" width="'+widthVal+'px" ></iframe><div class="preview_close cancel">close</div></div>';
-	$('#modalDiv').html(content).dialog({width:'auto', modal:true,resizable: false,position: 'center',create: function(event, ui) {$("html").css({ overflow: 'hidden' })  },close: function(event, ui) { $("html").css({ overflow: 'auto' }) } });
+	
+	$('#modalDiv').html(content).dialog({width:'auto', modal:true,resizable: false,position: 'center',create: function(event, ui) {$("html").css({ overflow: 'hidden' }); bottomToolBarHide();  },close: function(event, ui) { $("html").css({ overflow: 'auto' }); bottomToolBarShow(); } });
 
 }
+
 function loadAdminHere(sid,extra)
 {
 	 $("#pageContent").hide();
@@ -557,14 +559,20 @@ function loadAdminHere(sid,extra)
 	var tContent='<div id="toolbar_sites_cont" style="display:none"><div class="sep"></div> <div class="site rep_sprite"><div class="favicon_cont"><img src="https://getfavicon.appspot.com/'+site[sid].URL+'?defaulticon=https://www.google.com/s2/u/0/favicons?domain=www.wordpress.org" width="16" height="16"></div><div class="site_name">'+site[sid].name+'</div><div class="close rep_sprite_backup closePopup" onclick=""></div></div> </div>';
 	$("#addWebsiteContainer").after(tContent);
 	$("#toolbar_sites_cont").show("slide", { direction: "left" }, 500);
-$("html").css({ overflow: 'hidden' })
+	setTimeout(function () { $(".site","#toolbar_sites_cont").addClass('animated') },501);
 
+$("html").css({ overflow: 'hidden' })
+bottomToolBarHide();
  },
  close: function(event, ui) {
+	 $(".site","#toolbar_sites_cont").removeClass('animated');
  $("#pageContent").show();
- $("html").css({ overflow: 'auto' })
+ $("html").css({ overflow: 'auto' });
+  
  $("#toolbar_sites_cont").hide("slide", { direction: "left" }, 500);
+$(".site","#toolbar_sites_cont").removeClass('animated');
 // $("#toolbar_sites_cont").remove();
+bottomToolBarShow(); 
  }});
 
 
@@ -577,7 +585,7 @@ function loadRemoveSite(sid)
 	var content='<div class="dialog_cont remove_site"> <div class="th rep_sprite"> <div class="title droid700">REMOVE WEBSITE</div> <a class="cancel rep_sprite_backup">cancel</a></div> <div style="padding:20px;"><div style="text-align:center;" id="removeSiteCont">Are you sure you want to remove this website?<div class="site">'+site[sid].URL+'</div><span>IWP Plugin will be deactivated.</span></div></div> <div class="clear-both"></div> <div class="th_sub rep_sprite" style="border-top:1px solid #c6c9ca;" id="removeSiteButtons"><div class="warning rep_sprite_backup">This action cannot be undone.</div> <div class="btn_action float-right"><a class="rep_sprite" id="removeSiteConfirm">Remove</a></div> <span class="float-right cancel" id="dontRemoveSite">Don\'t remove</span> </div> </div>';
 	$("#modalDiv").dialog("close");
 	$("#modalDiv").dialog("destroy");
-	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false});
+	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false, open: function(event, ui) {bottomToolBarHide(); },close: function(event, ui) {bottomToolBarShow(); }});
 	$("#removeSiteConfirm").attr('sid',sid);
 	
 }
@@ -597,6 +605,14 @@ function loadSettingsPage(data)
 	$("#sendAnonymous").addClass('active');
 	else
 	$("#sendAnonymous").removeClass('active');
+	if(data.settings.general.enableFsockFget!=undefined && data.settings.general.enableFsockFget!='' && data.settings.general.enableFsockFget!=0)
+	$("#enableFsockFget").addClass('active');
+	else
+	$("#enableFsockFget").removeClass('active');
+	if(data.settings.general.enableReloadDataPageLoad!=undefined && data.settings.general.enableReloadDataPageLoad!='' && data.settings.general.enableReloadDataPageLoad!=0)
+	$("#enableReloadDataPageLoad").addClass('active');
+	else
+	$("#enableReloadDataPageLoad").removeClass('active');
 
 	if( getPropertyCount(data.settings.allowedLoginIPs)>0)
 	{
@@ -614,6 +630,10 @@ function loadSettingsPage(data)
 	$(".change_pass_cont").hide();
 	$("#IPContent .label").after(iContent);
 	$(".passwords").blur();
+	if(data.settings.general.httpAuth!=undefined && data.settings.general.httpAuth.username!=undefined)
+	$("#authUsername").val(data.settings.general.httpAuth.username);
+	if(data.settings.general.httpAuth!=undefined && data.settings.general.httpAuth.password!=undefined)
+	$("#authPassword").val(data.settings.general.httpAuth.password);
 	$("#email").val(data.accountSettings.email).removeClass('focus');
 	if(data.settings.notifications.updatesNotificationMail.coreUpdates==1)
 	$("#notifyWordpress").addClass('active');
@@ -642,7 +662,7 @@ function loadReport(data,extra) // For sending general feedback.
 	}
 	var content='<div class="dialog_cont send_report" style="width: 542px;"> <div class="th rep_sprite"> <div class="title droid700">'+reportHeader+'</div> <a class="cancel rep_sprite_backup">cancel</a></div> <div class=" form_cont" style="border:0;"> <!--<div class="th rep_sprite">Add New Website</div>--> <div class="tr"> <div class="tl">SEND FROM</div> <div class="td"> <input name="" type="text" id="emailToReport" value="'+settingsData.data.getSettingsAll.accountSettings.email+'" /> </div> <div class="clear-both"></div> </div> <div class="tr"> <div class="tl two_liner">'+ifAnyContent+'</div> <div class="td"> <textarea name="textarea" id="customerComments" cols="45" rows="5"></textarea> </div>'+extraContent+' <div class="clear-both"></div> </div> <div class="tr">  <div class="clear-both"></div> </div> </div> <div class="th rep_sprite" style="border-top:1px solid #c6c9ca; height: 35px;"><div class="btn_action float-right"><a class="rep_sprite" id="sendReportBtn" actiontype="'+actionType+'">Send Report</a></div></div> </div>';
 	$("#modalDiv").dialog("destroy");
-	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false});
+	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false, open: function(event, ui) {bottomToolBarHide(); },close: function(event, ui) {bottomToolBarShow(); }});
 }
 function loadMoreInfo(data)
 {
@@ -651,11 +671,11 @@ function loadMoreInfo(data)
 	finalData='No additional website response available.';
 	var content='<div class="dialog_cont send_report" style="width: 500px;"> <div class="th rep_sprite"> <div class="title droid700">WEBSITE RESPONSE</div> <a class="cancel rep_sprite_backup">cancel</a></div> <div class=" form_cont" style="border:0;"> <!--<div class="th rep_sprite">Add New Website</div>--><div class="td" id="iframeInfoDiv"></div></div></div></div>';
 	$("#modalDiv").dialog("destroy");
-	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false});
+	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false, open: function(event, ui) {bottomToolBarHide(); },close: function(event, ui) {bottomToolBarShow(); }});
 	$('<iframe id="someIdFrame" width="480" height="300"/>').appendTo('#iframeInfoDiv').ready(function(){
     setTimeout(function(){
         $('#someIdFrame').contents().find('body').append(finalData);
-    },50);
+    },200);
 });
 	$('#modalDiv').dialog({position: 'center'});
 
@@ -696,7 +716,7 @@ function loadFeatureTour()
 	var widthVal=$(window).width();
 	var content = '<iframe src="./demo/demo.html" height="'+heightVal+'px" width="'+widthVal+'px" id="demoTour"></iframe>';
 	$("#modalDiv").dialog("destroy");
-	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center', dialogClass: 'padding_fix' ,resizable: false,zIndex: 1020 , create: function(event, ui) {  $("html").css({ overflow: 'hidden' })},close: function(event, ui) { $("html").css({ overflow: 'auto' })}});
+	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center', dialogClass: 'padding_fix' ,resizable: false,zIndex: 1020 , create: function(event, ui) {  $("html").css({ overflow: 'hidden' }); bottomToolBarHide();},close: function(event, ui) { $("html").css({ overflow: 'auto' }); bottomToolBarShow();}});
 	
 	
 }
@@ -705,5 +725,5 @@ function loadFeatureTourPopup()
 {
 	var content='<div class="dialog_cont take_tour" style="width:400px;"> <div class="th rep_sprite"> <div class="title droid700">TAKE A TOUR</div></div> <div style="padding:20px;"><div style="text-align:center;" id="removeSiteCont">Would you like us to show you around the app?</div><table style="width:320px; margin:20px auto;"><tr><td><div class="btn_action float-right"><a class="rep_sprite save_changes takeTour closeTour" style="display: block; ">Sure, Take a Tour.</a></div></td><td><div class="btn_action float-right"><a class="rep_sprite closeTour cancel" style="color: #6C7277;">No thanks. I ll find my way.</a></div></td></tr><tr><td></td><td align="center"><span style="color:#96999b; text-align:centre;">You can take the tour anytime <br>from the top navigation.</span></td></tr></table></div> <div class="clear-both"></div></div>';
 	$("#modalDiv").dialog("destroy");
-	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false});
+	$('#modalDiv').html(content).dialog({width:'auto',modal:true,position: 'center',resizable: false, open: function(event, ui) { bottomToolBarHide(); },close: function(event, ui) {bottomToolBarShow(); }});
 }

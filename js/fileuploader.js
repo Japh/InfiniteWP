@@ -595,11 +595,17 @@ qq.extend(qq.FileUploader.prototype, {
     },
     _onSubmit: function(id, fileName){
         qq.FileUploaderBasic.prototype._onSubmit.apply(this, arguments);
-        this._addToList(id, fileName);  
+		$(".uploadInstallBtn").removeClass('active');
+        this._addToList(id, fileName);
+		var tname=	$("#uploadNameID").html();
+			
+			$("#uploadNameID").attr('id','');
+		 	$("#upfilenameID").html(tname);
+			$("#upfilenameID").attr('id','');  
     },
     _onProgress: function(id, fileName, loaded, total){
         qq.FileUploaderBasic.prototype._onProgress.apply(this, arguments);
-$(".uploadInstallBtn").removeClass('active');
+
         var item = this._getItemByFileId(id);
         var size = this._find(item, 'size');
        // size.style.display = 'inline';
@@ -611,11 +617,7 @@ $(".uploadInstallBtn").removeClass('active');
             text = this._formatSize(total);
         }          
          widthVal=Math.round(loaded / total * 100);
-		 	tname=	$("#uploadNameID").html();
-			$("#uploadNameID").attr('id','');
-		 	$("#upfilenameID").html(tname);
-			$("#upfilenameID").attr('id','');
-        qq.setText(size, text,widthVal);      
+		qq.setText(size, text,widthVal);      
     },
     _onComplete: function(id, fileName, result){
         qq.FileUploaderBasic.prototype._onComplete.apply(this, arguments);

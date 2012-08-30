@@ -92,6 +92,7 @@ var settingsData = <?php echo $totalSettings;?>;
 <div id="modalDiv"></div>
 
 <!--<div class="overlay_test"></div>-->
+<div id="dynamic_resize">
 <div id="site_cont">
   <div id="header_bar"> <a href="" style="text-decoration:none;">
     <div id="logo"></div>
@@ -267,6 +268,24 @@ var settingsData = <?php echo $totalSettings;?>;
               </div>
             </div>
             <div class="tr">
+              <div class="padding">
+                <div class="label">HTTP AUTHENTICATION / FOLDER PROTECTION</div>
+                <table border="0" class="http_auth">
+  <tr>
+    <td align="left"><input name="" id="authUsername" type="text" helptxt="username" class="txtHelp" value="username" /></td>
+    <td align="right"><input name="" id="authPassword" type="password"  helptxt="password" class="txtHelp" value="password" /></td>
+  </tr>
+</table>
+
+              </div>
+            </div>
+             <div class="tr">
+              <div class="checkbox" id="enableFsockFget">Activate Synchronous mode (restricts number of simultaneous calls to 1).</div>
+            </div>
+             <div class="tr">
+              <div class="checkbox" id="enableReloadDataPageLoad">Reload data on page load.</div>
+            </div>
+            <div class="tr">
               <div class="checkbox active" id="sendAnonymous">Send anonymous usage information to improve IWP.</div>
             </div>
           </div>
@@ -287,6 +306,7 @@ var settingsData = <?php echo $totalSettings;?>;
       <li><a class="navLinks optionSelect" page="history">Activity Log</a></li>
     </ul>
     <div class="btn_reload rep_sprite"><a class="rep_sprite_backup user_select_no" id="reloadStats">Reload Data</a></div>
+    <div class="checkbox user_select_no" style="float:right; width:70px; cursor:pointer;" id="clearPluginCache">Clear cache</div>
     <div class="clear-both"></div>
     <hr class="dotted" />
     <div id="pageContent">
@@ -300,6 +320,7 @@ var settingsData = <?php echo $totalSettings;?>;
         <a href="http://www.youtube.com/watch?v=q94w5Vlpwog" target="_blank">See How</a>. </div>
     </div>
   </div>
+</div>
 </div>
 <div id="bottom_toolbar" class="siteSearch">
   <div id="activityPopup"> </div>

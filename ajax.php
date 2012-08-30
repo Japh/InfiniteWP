@@ -13,8 +13,4 @@ require('includes/app.php');
 panelRequestManager::handler($_REQUEST);
 
 
-
-
-
-
 ?>

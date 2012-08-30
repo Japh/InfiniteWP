@@ -40,7 +40,7 @@ class TPL{
 			return $HTML;
 		}
 		else{
-			echo '<br><strong>TPL Error:</strong> File not found	('.$tplFile.')<br>';
+			return '<br><strong>TPL Error:</strong> File not found	('.$tplFile.')<br>';
 		}	
 	}
 	

@@ -104,9 +104,11 @@ class panelRequestManager{
 	
 	public static function addSiteSetGroups($siteID, $groupsPlainText, $groupIDs){
 		
-		if(empty($siteID) || (empty($groupsPlainText) &&  empty($groupIDs))) return false;	
+		if(empty($siteID)) return false;	
 		
 		if(empty($groupIDs)){ $groupIDs = array(); }
+		
+		DB::delete("?:groups_sites", "siteID='".$siteID."'");//for updating
 		
 		$groupNames = explode(',', $groupsPlainText);
 		array_walk($groupNames, 'trimValue');
@@ -293,9 +295,23 @@ class panelRequestManager{
 		$sitesStats = self::getRawSitesStats();
 
 		foreach($sitesStats as $siteID){
+			
+			$siteID['stats']['premium_updates'] = (array)$siteID['stats']['premium_updates'];
+			foreach($siteID['stats']['premium_updates'] as $item){			
+				$isHiddenItem = false;
+				$ignoredUpdates = DB::getField("?:hide_list", "URL", "URL = '".$item['slug']."' AND siteID = '".$siteID['siteID']."'"); 
+				if($ignoredUpdates){ 
+					$isHiddenItem = true;
+				} 
+				$temp['hiddenItem'] = $isHiddenItem;
+				
+				$pluginView['plugins'][$item['slug']][$siteID['siteID']] = $siteView[$siteID['siteID']]['plugins'][$item['slug']] = array_change_key_case($item, CASE_LOWER);
+			}
+			
+			
 						
 			$siteID['stats']['upgradable_plugins'] = (array)$siteID['stats']['upgradable_plugins'];
-			foreach($siteID['stats']['upgradable_plugins'] as $item){				
+			foreach($siteID['stats']['upgradable_plugins'] as $item){			
 				$temp = objectToArray($item);
 				if(!is_array($temp))
 				$temp=array();
@@ -309,6 +325,7 @@ class panelRequestManager{
 				
 				$pluginView['plugins'][$item->file][$siteID['siteID']] = $siteView[$siteID['siteID']]['plugins'][$item->file] = $temp;
 			}
+			
 			$siteID['stats']['upgradable_themes'] = (array)$siteID['stats']['upgradable_themes'];
 			foreach($siteID['stats']['upgradable_themes'] as $item){
 				
@@ -364,7 +381,23 @@ class panelRequestManager{
 	}
 	
 	public static function getSites(){
-		return DB::getArray("?:sites", "siteID, URL, adminURL, name, IP, adminUsername, isOpenSSLActive, network, parent", "1", "siteID");
+		$sitesData = DB::getArray("?:sites", "siteID, URL, adminURL, name, IP, adminUsername, isOpenSSLActive, network, parent, httpAuth", "1", "siteID");
+		$groupsSites = DB::getArray("?:groups_sites", "*", "1");
+		if(!empty($groupsSites)){
+			foreach($groupsSites as $groupSite){
+				if(!empty($sitesData[$groupSite['siteID']])){
+					$sitesData[$groupSite['siteID']]['groupIDs'][] = $groupSite['groupID'];
+				}
+			}
+		}
+		if(!empty($sitesData)){
+			foreach($sitesData as $siteID => $siteData){
+				if(!empty($siteData['httpAuth'])){
+					$sitesData[$siteID]['httpAuth'] = @unserialize($siteData['httpAuth']);
+				}
+			}
+		}
+		return $sitesData;
 	}
 	
 	public static function getSearchedPluginsThemes(){
@@ -570,7 +603,7 @@ class panelRequestManager{
 	
 	public static function getHide(){
 	
-		$getHide = DB::getArray("?:hide_list", "*", 1, "siteID");
+		$getHide = DB::getArray("?:hide_list", "*", "1");
 		$hide = array();
 		foreach($getHide as $v){
 			$hide[$v["siteID"]][] = array('type' => $v["type"], 'name' => $v["name"], 'URL' => $v["URL"]);	
@@ -764,8 +797,8 @@ class panelRequestManager{
 					$_SESSION['clientUpdates'] = array();
 				}
 				//$_SESSION['clientUpdates']['tempIgnore'] = false;
-	
-				if( !empty($stats['client_new_version']) ){
+				
+				if( !empty($stats['client_new_version']) && version_compare($stats['client_version'], $stats['client_new_version']) == -1 ){//fixed repeated Client update popup
 					$_SESSION['clientUpdates']['sitesUpdate'][$siteID] = $stats['client_new_package'];
 				}
 				elseif( version_compare($stats['client_version'], '0.1.4') != 1 ){
@@ -824,9 +857,30 @@ class panelRequestManager{
 	public static function getResponseMoreInfo($historyID){
 		return getResponseMoreInfo($historyID);
 	}
+	
+	public static function updateSite($params){
+		
+		if(empty($params['siteID'])){ return false; }
+		
+		$siteData = array( "adminURL" 		=> $params['adminURL'],
+						   "adminUsername"	=> $params['adminUsername'],
+						  ); // save data
+						  
+		if(!empty($params['httpAuth']['username'])){
+			  $siteData['httpAuth'] = serialize($params['httpAuth']);
+		}
+		else{
+			$siteData['httpAuth'] = '';
+		}
+	  
+		$isDone = DB::update('?:sites', $siteData, "siteID = ".$params['siteID']); 
+		//DB::replace("?:user_access", array('userID' => $_SESSION['userID'], 'siteID' => $siteID));			  
+		
+		if($isDone){
+			panelRequestManager::addSiteSetGroups($params['siteID'], $params['groupsPlainText'], $params['groupIDs']);	
+		}
+		return $isDone;
+	}
 		
 }
-
-
-
 ?>

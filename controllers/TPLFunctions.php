@@ -63,6 +63,7 @@ function TPLPrepareHistoryBriefTitle($actionHistory){
 }
 
 function TPLAddErrorHelp($actionData){
+
 	if(stripos($actionData['errorMsg'], 'please add FTP details') !== false){
 		$actionData['errorMsg'] .= ' <a href="http://infinitewp.com/knowledge-base/adding-ftp-details-for-auto-update/?utm_source=application&utm_medium=userapp&utm_campaign=kb" target="_blank">How?</a>';
 	}
@@ -74,10 +75,19 @@ function TPLAddErrorHelp($actionData){
 		
 		if(empty($GLOBALS['fsockSameURLConnectCheckCache'])){
 			$GLOBALS['fsockSameURLConnectCheckCache'] = fsockSameURLConnectCheck(APP_URL.'execute.php');
-		 }
+		}
 		
-		if(empty($GLOBALS['fsockSameURLConnectCheck']['status'])){
-			$actionData['errorMsg'] .= 'Fsock Error:'.$GLOBALS['fsockSameURLConnectCheck']['error'].' Kindly contact your host.';
+		if(empty($GLOBALS['fsockSameURLConnectCheckCache']['status'])){
+			$actionData['errorMsg'] .= ' Fsock Error: '.$GLOBALS['fsockSameURLConnectCheckCache']['error'];
+			if($GLOBALS['fsockSameURLConnectCheckCache']['errorNo'] != 'authentication_required'){
+				$actionData['errorMsg'] .= ' Kindly contact your host.';
+			}
+		}
+	}
+	if($actionData['error'] == 'unknown'){//for update
+		
+		if($actionData['detailedAction'] == 'plugin' || $actionData['detailedAction'] == 'theme'){ //for update
+			$actionData['errorMsg'] .= ' Please <a onclick="$(\'#clearPluginCache\').addClass(\'active\');$(\'#reloadStats\').click();">Clear cache and Reload Data</a> and try again. It is possible that the plugin/theme is already updated. <a href="http://infinitewp.com/knowledge-base/unknown-error-occurred-during-update-process?utm_source=application&utm_medium=userapp&utm_campaign=kb" target="_blank">How?</a>';
 		}
 	}
 	return $actionData['errorMsg'];
